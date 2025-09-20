@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "network-map",
+      "description": "A stylized map of the world showing interconnected flight networks.",
+      "imageUrl": "https://picsum.photos/seed/network-map/1200/675",
+      "imageHint": "world map network"
+    },
+    {
+      "id": "route-before",
+      "description": "Visualization of a standard flight path on a map.",
+      "imageUrl": "https://picsum.photos/seed/route-before/400/400",
+      "imageHint": "flight route map"
+    },
+    {
+      "id": "route-after",
+      "description": "Visualization of an optimized, rerouted flight path on a map.",
+      "imageUrl": "https://picsum.photos/seed/route-after/400/400",
+      "imageHint": "alternate flight route"
+    },
+    {
+      "id": "tech-abstract",
+      "description": "An abstract image representing technology and data networks.",
+      "imageUrl": "https://picsum.photos/seed/tech-abstract/600/600",
+      "imageHint": "abstract technology"
+    }
+  ]
 }
