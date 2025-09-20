@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, Suspense, lazy } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +17,11 @@ import { AnimatedButton } from '@/components/ui/animated-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { airportCoordinates, getRerouteCoord } from '@/lib/airport-coordinates';
 
-const SimulationChart = lazy(() => import('@/components/simulation-chart'));
-const RouteMap = lazy(() => import('@/components/route-map'));
+const SimulationChart = dynamic(() => import('@/components/simulation-chart'));
+const RouteMap = dynamic(() => import('@/components/route-map'), { 
+  ssr: false,
+  loading: () => <Skeleton className="h-[300px] w-full" />
+});
 
 
 const formSchema = z.object({
@@ -253,25 +257,21 @@ export default function SimulateReroutesPage() {
             <CardContent className="grid md:grid-cols-2 gap-4">
                <div className="space-y-2">
                  <h3 className="font-semibold text-center">Original Route</h3>
-                 <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
-                    <RouteMap 
-                      airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
-                      path={originalRoute}
-                      isRerouted={false} 
-                      containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
-                    />
-                 </Suspense>
+                 <RouteMap 
+                    airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                    path={originalRoute}
+                    isRerouted={false} 
+                    containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
+                  />
                </div>
                <div className="space-y-2">
                  <h3 className="font-semibold text-center">Rerouted Path</h3>
-                 <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
-                    <RouteMap 
-                        airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
-                        path={reroutedPath} 
-                        isRerouted={true}
-                        containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
-                    />
-                 </Suspense>
+                 <RouteMap 
+                      airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                      path={reroutedPath} 
+                      isRerouted={true}
+                      containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
+                  />
                </div>
             </CardContent>
           </Card>
