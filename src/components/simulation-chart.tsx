@@ -10,11 +10,11 @@ import type { SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
 const chartConfig = {
   delayTime: {
     label: "Delay Time (min)",
-    color: "hsl(var(--primary))",
+    color: "hsl(var(--accent))",
   },
   cost: {
     label: "Cost ($)",
-    color: "hsl(var(--accent-foreground))",
+    color: "hsl(var(--primary))",
   },
 };
 
@@ -33,8 +33,8 @@ export default function SimulationChart({ data }: SimulationChartProps) {
       <BarChart data={simulationData} accessibilityLayer>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-        <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" />
-        <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--accent-foreground))" />
+        <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--accent))" />
+        <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--primary))" />
         <RechartsTooltip cursor={false} content={<ChartTooltipContent />} />
         <Bar dataKey="delayTime" yAxisId="left" fill="var(--color-delayTime)" radius={4} />
         <Bar dataKey="cost" yAxisId="right" fill="var(--color-cost)" radius={4} />

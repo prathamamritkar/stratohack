@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import {
   Network,
-  AlertTriangle,
+  Zap,
   GitBranch,
   Trophy,
   Info,
@@ -23,7 +23,7 @@ import { usePathname } from 'next/navigation';
 
 const menuItems = [
   { href: '/', label: 'Network', icon: Network },
-  { href: '/predict-delays', label: 'Predict Delays', icon: AlertTriangle },
+  { href: '/predict-delays', label: 'Predict Delays', icon: Zap },
   { href: '/simulate-reroutes', label: 'Simulate Reroutes', icon: GitBranch },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/about', label: 'About', icon: Info },
@@ -34,7 +34,7 @@ export function SiteSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b">
+      <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 p-2">
             <Plane className="w-8 h-8 text-primary" />
             <div className="flex flex-col">

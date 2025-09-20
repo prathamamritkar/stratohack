@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader2, GitBranch } from 'lucide-react';
 import Image from 'next/image';
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -65,15 +65,18 @@ export default function SimulateReroutesPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline">Rerouting Strategy Simulation</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline flex items-center gap-3">
+          <GitBranch className="text-primary w-8 h-8" />
+          Rerouting Strategy Simulation
+        </h1>
+        <p className="text-muted-foreground mt-2">
           Simulate rerouting strategies to mitigate congestion and analyze the impact.
         </p>
       </header>
       
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <Card>
+          <Card className="bg-card/80 border-accent/20">
             <CardHeader>
               <CardTitle>Simulation Setup</CardTitle>
               <CardDescription>Define the route and simulation variables.</CardDescription>
@@ -161,10 +164,10 @@ export default function SimulateReroutesPage() {
                       )}
                     />
                   
-                  <AnimatedButton type="submit" disabled={isLoading} className="w-full">
+                  <AnimatedButton type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                      {isLoading ? (
                       <>
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Simulating...
                       </>
                     ) : (
@@ -178,7 +181,7 @@ export default function SimulateReroutesPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card className={!isLoading && !simulationResult ? 'opacity-50' : ''}>
+          <Card className={`transition-opacity ${!isLoading && !simulationResult ? 'opacity-50' : ''}`}>
             <CardHeader>
               <CardTitle>Simulation Results</CardTitle>
               <CardDescription>Comparison of original vs. simulated routes.</CardDescription>
@@ -186,22 +189,22 @@ export default function SimulateReroutesPage() {
             <CardContent>
               {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground flex items-center justify-center">
-                    <Loader className="mr-2 h-6 w-6 animate-spin" />
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     <p>Running simulation...</p>
                   </div>
               ) : error ? (
-                 <div className="text-center py-12 text-red-500">{error}</div>
+                 <div className="text-center py-12 text-destructive">{error}</div>
               ) : simulationResult ? (
                 <div className="space-y-6">
                   <div className="grid sm:grid-cols-2 gap-4 text-center">
                     <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">Delay Time Saved</p>
-                        <p className={`text-3xl font-bold ${calculatedSavings > 0 ? 'text-green-500' : 'text-red-500'}`}>{Math.abs(calculatedSavings)} min</p>
+                        <p className={`text-3xl font-bold ${calculatedSavings > 0 ? 'text-green-400' : 'text-red-400'}`}>{Math.abs(calculatedSavings)} min</p>
                     </div>
                      <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">Cost Impact</p>
-                        <p className={`text-3xl font-bold ${costIncrease > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                          {costIncrease > 0 ? '+' : '-'}${Math.abs(costIncrease)}
+                        <p className={`text-3xl font-bold ${costIncrease > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                          {costIncrease > 0 ? '+' : '-'}${Math.abs(costIncrease).toLocaleString()}
                         </p>
                     </div>
                   </div>
@@ -221,21 +224,21 @@ export default function SimulateReroutesPage() {
             </CardContent>
           </Card>
 
-          <Card className={!isLoading && !simulationResult ? 'opacity-50' : ''}>
+          <Card className={`transition-opacity ${!isLoading && !simulationResult ? 'opacity-50' : ''}`}>
             <CardHeader>
               <CardTitle>Route Visualization</CardTitle>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-4">
                <div className="space-y-2">
-                 <h3 className="font-semibold text-center">Before</h3>
-                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden">
-                   <Image src={simulationResult?.original.mapUrl || "https://picsum.photos/seed/route-before/400/400"} alt="Route before" fill data-ai-hint="flight route map"/>
+                 <h3 className="font-semibold text-center">Original Route</h3>
+                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden border-2 border-transparent">
+                   <Image src={simulationResult?.original.mapUrl || "https://picsum.photos/seed/route-before/400/400"} alt="Route before" fill data-ai-hint="flight route map" className="object-cover" />
                  </div>
                </div>
                <div className="space-y-2">
-                 <h3 className="font-semibold text-center">After</h3>
-                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden">
-                    <Image src={simulationResult?.rerouted.mapUrl || "https://picsum.photos/seed/route-after/400/400"} alt="Route after" fill data-ai-hint="alternate flight route"/>
+                 <h3 className="font-semibold text-center">Rerouted Path</h3>
+                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden border-2 border-primary">
+                    <Image src={simulationResult?.rerouted.mapUrl || "https://picsum.photos/seed/route-after/400/400"} alt="Route after" fill data-ai-hint="alternate flight route" className="object-cover" />
                  </div>
                </div>
             </CardContent>

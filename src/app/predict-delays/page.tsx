@@ -14,26 +14,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, Info, Plane, Zap } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from '@/components/ui/progress';
 
-import { selectGnnModel, SelectGnnModelOutput } from '@/ai/flows/gnn-model-selection';
-import { explainDelayFactors, ExplainDelayFactorsOutput } from '@/ai/flows/explain-delay-factors';
+import { predictCascadingDelays, PredictCascadingDelaysOutput } from '@/ai/flows/predict-cascading-delays-flow';
 
 const formSchema = z.object({
   airport: z.string().min(3, 'Airport code must be 3 characters').max(4, 'Airport code must be at most 4 characters').toUpperCase(),
-  criteria: z.string().min(10, 'Please provide more detailed criteria.'),
 });
 
-type PredictionResult = {
-  modelSelection: SelectGnnModelOutput;
-  delayExplanation: ExplainDelayFactorsOutput;
-};
-
-const mockMetrics = ['Degree Centrality', 'Betweenness Centrality', 'Average Flight Duration', 'Hourly Arrivals/Departures'];
-const mockPrediction = 'High probability of cascading delays affecting 5 connected airports within the next 6 hours.';
-
+type PredictionResult = PredictCascadingDelaysOutput;
 
 export default function PredictDelaysPage() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
@@ -44,7 +36,6 @@ export default function PredictDelaysPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       airport: 'JFK',
-      criteria: 'Prioritize accuracy for short-term predictions in a dense network.',
     },
   });
 
@@ -54,18 +45,10 @@ export default function PredictDelaysPage() {
     setPrediction(null);
 
     try {
-      const modelSelection = await selectGnnModel({
-        airport: values.airport,
-        gnnModelSelectionCriteria: values.criteria,
+      const result = await predictCascadingDelays({
+        congestedAirport: values.airport,
       });
-
-      const delayExplanation = await explainDelayFactors({
-        airport: values.airport,
-        metrics: mockMetrics,
-        prediction: mockPrediction,
-      });
-      
-      setPrediction({ modelSelection, delayExplanation });
+      setPrediction(result);
 
     } catch (e) {
       console.error(e);
@@ -77,18 +60,21 @@ export default function PredictDelaysPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-      <div className="space-y-4">
+      <div className="space-y-6">
         <header>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline">Cascading Delay Prediction</h1>
-          <p className="text-muted-foreground">
-            Use AI to select a GNN model and predict the propagation of flight delays.
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline flex items-center gap-3">
+            <Zap className="text-primary w-8 h-8" />
+            Cascading Delay Prediction
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Use a GNN model to predict the propagation of flight delays from a congested airport.
           </p>
         </header>
 
-        <Card>
+        <Card className="bg-card/80 border-accent/20">
           <CardHeader>
             <CardTitle>Prediction Parameters</CardTitle>
-            <CardDescription>Enter a congested airport and criteria for model selection.</CardDescription>
+            <CardDescription>Enter a congested airport to begin the simulation.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -100,32 +86,22 @@ export default function PredictDelaysPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Congested Airport (IATA Code)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., JFK, LAX, ORD" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="criteria"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>GNN Model Selection Criteria</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., High accuracy, fast inference..." {...field} />
-                        </FormControl>
+                        <div className="relative">
+                          <Plane className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input placeholder="e.g., JFK, LAX, ORD" {...field} className="pl-10" />
+                          </FormControl>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="bg-accent text-accent-foreground hover:bg-accent/90">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Prediction...
+                      Predicting Delays...
                     </>
                   ) : (
                     'Predict Delays'
@@ -145,56 +121,29 @@ export default function PredictDelaysPage() {
         )}
 
         {prediction && (
-          <div className="space-y-4 pt-4">
+          <div className="space-y-6 pt-4">
             <Separator />
             <h2 className="text-2xl font-bold tracking-tight">Prediction Results for {form.getValues('airport')}</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-                <Card className="bg-card/50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="text-green-500" />
-                            GNN Model Selected
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-baseline gap-2">
-                            <p className="text-4xl font-bold text-primary">{prediction.modelSelection.selectedModel}</p>
-                            <p className="text-sm text-muted-foreground">selected</p>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Affected Airports</CardTitle>
+                    <CardDescription>The following airports are likely to experience cascading delays.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {prediction.affectedAirports.map((airport) => (
+                        <div key={airport.airport} className="p-4 bg-muted/50 rounded-lg space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="font-bold text-lg text-primary">{airport.airport}</span>
+                                <span className="text-sm font-mono p-1 px-2 rounded bg-destructive/20 text-destructive-foreground">{airport.predictedDelay} min delay</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Progress value={airport.delayProbability} className="h-2" />
+                                <span className="text-xs font-semibold text-muted-foreground w-16 text-right">{airport.delayProbability.toFixed(1)}%</span>
+                            </div>
                         </div>
-                        <Alert>
-                            <Info className="h-4 w-4" />
-                            <AlertTitle>Justification</AlertTitle>
-                            <AlertDescription>
-                                {prediction.modelSelection.justification}
-                            </AlertDescription>
-                        </Alert>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-card/50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                           <AlertTriangle className="text-orange-500"/>
-                            Delay Factors Analysis
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                         <Alert variant="destructive">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle>Predicted Impact</AlertTitle>
-                            <AlertDescription>
-                                {mockPrediction}
-                            </AlertDescription>
-                        </Alert>
-                        <div>
-                            <h4 className="font-semibold mb-2">Key Influential Metrics:</h4>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap font-mono p-4 bg-muted rounded-md">
-                                {prediction.delayExplanation.explanation}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    ))}
+                </CardContent>
+            </Card>
           </div>
         )}
       </div>

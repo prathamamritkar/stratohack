@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="flex-1 bg-background relative overflow-hidden">
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground font-headline">
@@ -20,7 +20,7 @@ export default function Home() {
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <div className="rounded-md shadow">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/predict-delays">
                   Predict Delays
                   <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
@@ -38,7 +38,7 @@ export default function Home() {
         </div>
 
         <div className="mt-16 sm:mt-24">
-          <Card className="relative overflow-hidden shadow-2xl bg-card/80 backdrop-blur-sm">
+          <Card className="relative overflow-hidden shadow-2xl bg-card/80 backdrop-blur-sm border-accent/20">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Network className="w-8 h-8 text-primary" />
@@ -49,13 +49,13 @@ export default function Home() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video w-full rounded-lg bg-background/50 relative flex items-center justify-center border border-dashed">
+              <div className="aspect-video w-full rounded-lg bg-background/50 relative flex items-center justify-center border border-dashed border-accent/50">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://picsum.photos/seed/network-map/1200/675"
                         alt="Airport Network Map"
                         fill
-                        className="object-cover opacity-20"
+                        className="object-cover opacity-10"
                         data-ai-hint="world map network"
                     />
                 </div>
@@ -82,7 +82,7 @@ export default function Home() {
       </div>
        <style jsx>{`
         .bg-grid-pattern {
-          background-image: linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px);
+          background-image: linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px), linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px);
           background-size: 40px 40px;
         }
       `}</style>
