@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, AlertTriangle, CheckCircle, Info, Plane, Zap } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, Info, Plane, Zap, Map } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { predictCascadingDelays, PredictCascadingDelaysOutput } from '@/ai/flows/predict-cascading-delays-flow';
 import { airportCoordinates } from '@/lib/airport-coordinates';
+import { AnimatedButton } from '@/components/ui/animated-button';
 
 const RouteMap = dynamic(() => import('@/components/google-route-map'), { 
   ssr: false,
@@ -44,7 +45,7 @@ export default function PredictDelaysPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      airport: 'JFK',
+      airport: '',
     },
   });
 
@@ -88,19 +89,9 @@ export default function PredictDelaysPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-      <div className="space-y-6">
-        <header>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline flex items-center gap-3">
-            <Zap className="text-primary w-8 h-8" />
-            Cascading Delay Prediction
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Use a GNN model to predict the propagation of flight delays from a congested airport.
-          </p>
-        </header>
-        
+      <div className="space-y-8">
         <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-8">
                  <Card className="bg-card/80 border-accent/20">
                     <CardHeader>
                         <CardTitle>Prediction Parameters</CardTitle>
@@ -125,7 +116,7 @@ export default function PredictDelaysPage() {
                                 </FormItem>
                                 )}
                             />
-                            <Button type="submit" disabled={isLoading} className="bg-accent text-accent-foreground hover:bg-accent/90 w-full">
+                            <AnimatedButton type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                             {isLoading ? (
                                 <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -134,7 +125,7 @@ export default function PredictDelaysPage() {
                             ) : (
                                 'Predict Delays'
                             )}
-                            </Button>
+                            </AnimatedButton>
                         </form>
                         </Form>
                     </CardContent>
@@ -146,9 +137,9 @@ export default function PredictDelaysPage() {
                             <CardTitle>Affected Airports</CardTitle>
                             <CardDescription>Airports likely to experience cascading delays.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4 max-h-96 overflow-y-auto">
+                        <CardContent className="space-y-4 max-h-[calc(100vh-28rem)] overflow-y-auto">
                             {affectedAirportsData.map((airport) => (
-                                <div key={airport.airport} className="p-4 bg-muted/50 rounded-lg space-y-3">
+                                <div key={airport.airport} className="p-4 bg-muted/50 rounded-lg space-y-3 transition-all hover:bg-muted">
                                     <div className="flex justify-between items-center">
                                         <span className="font-bold text-lg text-primary">{airport.airport}</span>
                                         <span className="text-sm font-mono p-1 px-2 rounded bg-destructive/20 text-destructive-foreground">{airport.predictedDelay} min delay</span>
@@ -186,13 +177,23 @@ export default function PredictDelaysPage() {
                                 paths={delayPaths}
                                 originAirport={{ code: submittedAirport, coords: congestedAirportCoords }}
                                 affectedAirports={affectedAirportsData}
-                                containerClassName="h-[600px] w-full rounded-lg bg-muted relative overflow-hidden"
+                                containerClassName="h-[calc(100vh-14rem)] w-full rounded-lg bg-muted relative overflow-hidden"
                             />
                         ) : (
-                           <div className="h-[600px] w-full rounded-lg bg-muted flex items-center justify-center">
-                                <p className="text-muted-foreground">
-                                    {isLoading ? 'Generating prediction map...' : 'Enter an airport to see the delay propagation map.'}
-                                </p>
+                           <div className="h-[calc(100vh-14rem)] w-full rounded-lg bg-muted flex flex-col items-center justify-center text-center p-4">
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+                                        <p className="text-lg font-semibold">Generating Prediction...</p>
+                                        <p className="text-muted-foreground">The GNN model is analyzing network propagation.</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Map className="h-12 w-12 text-muted-foreground mb-4"/>
+                                        <p className="text-lg font-semibold">Map is ready</p>
+                                        <p className="text-muted-foreground">Enter an airport code to see the delay propagation map.</p>
+                                    </>
+                                )}
                             </div>
                         )}
 

@@ -5,6 +5,19 @@ import { SiteHeader } from '@/components/layout/header';
 import { SiteSidebar } from '@/components/layout/sidebar';
 import { Toaster } from "@/components/ui/toaster";
 import { PageTransition } from '@/components/layout/page-transition';
+import { Inter } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const fontInter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+});
+
+const fontHeadline = Inter({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-headline',
+});
 
 export const metadata: Metadata = {
   title: 'AirNavFlow',
@@ -18,12 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn("font-body antialiased", fontInter.variable, fontHeadline.variable)}>
         <SidebarProvider>
           <SiteSidebar />
           <SidebarInset>

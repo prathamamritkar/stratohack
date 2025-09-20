@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, GitBranch, Loader } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, GitBranch, Loader2 } from 'lucide-react';
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { AnimatedButton } from '@/components/ui/animated-button';
@@ -87,16 +87,6 @@ export default function SimulateReroutesPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline flex items-center gap-3">
-          <GitBranch className="text-primary w-8 h-8" />
-          Rerouting Strategy Simulation
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Simulate rerouting strategies to mitigate congestion and analyze the impact.
-        </p>
-      </header>
-      
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
           <Card className="bg-card/80 border-accent/20">
@@ -190,7 +180,7 @@ export default function SimulateReroutesPage() {
                   <AnimatedButton type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                      {isLoading ? (
                       <>
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Simulating...
                       </>
                     ) : (
@@ -204,16 +194,16 @@ export default function SimulateReroutesPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card className={`transition-opacity ${!isLoading && !simulationResult ? 'opacity-50' : ''}`}>
+          <Card className={`transition-opacity`}>
             <CardHeader>
               <CardTitle>Simulation Results</CardTitle>
               <CardDescription>Comparison of original vs. simulated routes.</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground flex items-center justify-center">
-                    <Loader className="mr-2 h-6 w-6 animate-spin" />
-                    <p>Running simulation...</p>
+                  <div className="text-center py-12 text-muted-foreground flex flex-col items-center justify-center">
+                    <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+                    <p className="mt-4 font-semibold">Running simulation...</p>
                   </div>
               ) : error ? (
                  <div className="text-center py-12 text-destructive">{error}</div>
@@ -247,7 +237,7 @@ export default function SimulateReroutesPage() {
             </CardContent>
           </Card>
 
-          <Card className={`transition-opacity ${!isLoading && !simulationResult ? 'opacity-50' : ''}`}>
+          <Card className={`transition-opacity`}>
              <CardHeader>
               <CardTitle>Route Visualization</CardTitle>
             </CardHeader>
