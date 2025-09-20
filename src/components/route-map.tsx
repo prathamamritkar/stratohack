@@ -43,6 +43,14 @@ function MapUpdater({ airports, path, isRerouted }: RouteMapProps) {
     }
   }, [map, path, airports.origin.coords]);
 
+  React.useEffect(() => {
+    return () => {
+      // When the component unmounts, remove the map
+      // This is a forceful cleanup to prevent initialization errors on hot-reloads
+      map.remove();
+    };
+  }, [map]);
+
   return (
     <>
       {airports.origin.coords && (
