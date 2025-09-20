@@ -1,7 +1,7 @@
 # Team Members
-- Aparna Jha  
-- Pratham Amritkar  
-- SK Zaheen  
+- Aparna Jha  (24f2006184@ds.study.iitm.ac.in)
+- Pratham Amritkar  (24f2003909@ds.study.iitm.ac.in)
+- SK Zaheen  (24f1001764@ds.study.iitm.ac.in)
 
 # Problem Statement
 
