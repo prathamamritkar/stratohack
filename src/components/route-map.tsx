@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react"
+import * as React from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngExpression, divIcon } from 'leaflet';
@@ -31,7 +31,6 @@ const createAirportIcon = (code: string) => {
   });
 };
 
-// Component to draw the path and markers
 const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airports, path, isRerouted }) => {
   const map = useMap();
 
@@ -39,7 +38,7 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
     if (path.length > 1 && airports.origin.coords && airports.destination.coords) {
         const bounds = [airports.origin.coords, airports.destination.coords];
         if (isRerouted && path.length > 2) {
-            bounds.push(path[1]); // Add reroute point to bounds
+            bounds.push(path[1]);
         }
         map.fitBounds(bounds as LatLngExpression[], { padding: [50, 50] });
     } else if (airports.origin.coords) {
@@ -75,25 +74,42 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
   );
 };
 
+// This component is memoized to prevent re-rendering of MapContainer
+const MapDisplay = React.memo(
+  function MapDisplay({ children, center }: { children: React.ReactNode, center: LatLngExpression }) {
+    return (
+      <MapContainer
+        center={center}
+        zoom={3}
+        scrollWheelZoom={false}
+        style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }}
+        attributionControl={false}
+      >
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+        {children}
+      </MapContainer>
+    );
+  }
+);
+
 
 const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
 
   if (!airports.origin.coords || !airports.destination.coords) {
-    return <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
+    return (
+      <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
         Enter valid airport codes to see the route.
-    </div>;
+      </div>
+    );
   }
   
   const center = getMidpoint(airports.origin.coords, airports.destination.coords);
   
   return (
     <div className={containerClassName}>
-      <MapContainer center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-        />
-        <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
-      </MapContainer>
+       <MapDisplay center={center}>
+          <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
+       </MapDisplay>
     </div>
   );
 };
