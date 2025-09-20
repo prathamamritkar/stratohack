@@ -7,6 +7,7 @@ const pageTitles: { [key: string]: string } = {
   '/': 'Global Airport Network',
   '/predict-delays': 'Cascading Delay Prediction',
   '/simulate-reroutes': 'Rerouting Strategy Simulation',
+  '/about': 'About Us',
 }
 
 function getPageTitle(pathname: string): string {
