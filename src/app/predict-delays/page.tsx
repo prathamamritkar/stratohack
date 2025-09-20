@@ -39,6 +39,7 @@ export default function PredictDelaysPage() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submittedAirport, setSubmittedAirport] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,6 +52,7 @@ export default function PredictDelaysPage() {
     setIsLoading(true);
     setError(null);
     setPrediction(null);
+    setSubmittedAirport(null);
     
     if (!airportCoordinates[values.airport]) {
       setError('Invalid airport code. Please use a valid IATA code like JFK, LAX, etc.');
@@ -63,6 +65,7 @@ export default function PredictDelaysPage() {
         congestedAirport: values.airport,
       });
       setPrediction(result);
+      setSubmittedAirport(values.airport);
 
     } catch (e) {
       console.error(e);
@@ -72,8 +75,7 @@ export default function PredictDelaysPage() {
     }
   }
   
-  const congestedAirportCode = form.watch('airport');
-  const congestedAirportCoords = airportCoordinates[congestedAirportCode];
+  const congestedAirportCoords = submittedAirport ? airportCoordinates[submittedAirport] : undefined;
 
   const affectedAirportsData = prediction?.affectedAirports.map(a => ({
       ...a,
@@ -176,14 +178,24 @@ export default function PredictDelaysPage() {
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}
-                       <RouteMap 
-                            key={congestedAirportCode}
-                            isPredictionMap={true}
-                            paths={delayPaths}
-                            originAirport={{ code: congestedAirportCode, coords: congestedAirportCoords }}
-                            affectedAirports={affectedAirportsData}
-                            containerClassName="h-[600px] w-full rounded-lg bg-muted relative overflow-hidden"
-                        />
+                        
+                        {!isLoading && !error && prediction && submittedAirport && congestedAirportCoords ? (
+                           <RouteMap 
+                                key={submittedAirport}
+                                isPredictionMap={true}
+                                paths={delayPaths}
+                                originAirport={{ code: submittedAirport, coords: congestedAirportCoords }}
+                                affectedAirports={affectedAirportsData}
+                                containerClassName="h-[600px] w-full rounded-lg bg-muted relative overflow-hidden"
+                            />
+                        ) : (
+                           <div className="h-[600px] w-full rounded-lg bg-muted flex items-center justify-center">
+                                <p className="text-muted-foreground">
+                                    {isLoading ? 'Generating prediction map...' : 'Enter an airport to see the delay propagation map.'}
+                                </p>
+                            </div>
+                        )}
+
                     </CardContent>
                 </Card>
             </div>
