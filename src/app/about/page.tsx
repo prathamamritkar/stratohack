@@ -13,20 +13,20 @@ const teamMembers = [
     icon: <BrainCircuit className="h-5 w-5 text-primary" />,
   },
   {
-    id: '24f2003909',
-    name: 'Pratham Amritkar',
-    specialization: 'AI & Systems Architecture',
-    field: 'Computer Engineering',
-    initials: 'PA',
-    icon: <Cpu className="h-5 w-5 text-primary" />,
-  },
-  {
     id: '24f2006184',
     name: 'Aparna Jha',
     specialization: 'Human Factors & Biometrics',
     field: 'Biology',
     initials: 'AJ',
     icon: <Dna className="h-5 w-5 text-primary" />,
+  },
+  {
+    id: '24f2003909',
+    name: 'Pratham Amritkar',
+    specialization: 'AI & Systems Architecture',
+    field: 'Computer Engineering',
+    initials: 'PA',
+    icon: <Cpu className="h-5 w-5 text-primary" />,
   },
 ];
 
