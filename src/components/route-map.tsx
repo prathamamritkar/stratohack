@@ -76,8 +76,7 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
 };
 
 
-const RouteMap = React.memo(function RouteMap({ airports, path, isRerouted, containerClassName }: RouteMapProps) {
-  const mapId = React.useId();
+const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
 
   if (!airports.origin.coords || !airports.destination.coords) {
     return <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
@@ -97,6 +96,6 @@ const RouteMap = React.memo(function RouteMap({ airports, path, isRerouted, cont
       </MapContainer>
     </div>
   );
-});
+};
 
 export default RouteMap;
