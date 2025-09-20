@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useCallback, useMemo } from "react";
@@ -102,13 +103,16 @@ const mapStyles = [
     },
 ];
 
-const GoogleRouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
+const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
+    googleMapsApiKey: apiKey || ""
   });
 
   const pathForPolyline = useMemo(() => path.map(p => ({ lat: p[0], lng: p[1] })), [path]);
+  
   const center = useMemo(() => {
     if (airports.origin.coords && airports.destination.coords) {
       const midpoint = getMidpoint(airports.origin.coords, airports.destination.coords);
@@ -124,6 +128,15 @@ const GoogleRouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, c
         map.fitBounds(bounds);
     }
   }, [pathForPolyline]);
+
+  if (!apiKey) {
+    return (
+        <div className={cn("flex flex-col items-center justify-center text-center text-destructive bg-muted", containerClassName)}>
+            <p className="font-bold">Google Maps API Key is missing.</p>
+            <p className="text-xs text-muted-foreground mt-1">Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env file.</p>
+        </div>
+    );
+  }
 
   if (loadError) {
     return (
@@ -180,4 +193,4 @@ const GoogleRouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, c
   );
 };
 
-export default GoogleRouteMap;
+export default RouteMap;
