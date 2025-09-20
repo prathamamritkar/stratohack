@@ -46,13 +46,15 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
     } else if (airports.destination.coords) {
         map.setView(airports.destination.coords, 5);
     }
-    
-    // Cleanup function to remove map on component unmount
+  }, [map, path, airports.origin.coords, airports.destination.coords, isRerouted]);
+
+  // Cleanup function to explicitly remove the map on component unmount
+  React.useEffect(() => {
     return () => {
         map.remove();
     };
+  }, [map]);
 
-  }, [map, path, airports.origin.coords, airports.destination.coords, isRerouted]);
 
   return (
     <>
@@ -80,24 +82,6 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
   );
 };
 
-// This component is memoized to prevent re-rendering of MapContainer
-const MapDisplay = React.memo(
-  function MapDisplay({ children, center }: { children: React.ReactNode, center: LatLngExpression }) {
-    return (
-      <MapContainer
-        center={center}
-        zoom={3}
-        scrollWheelZoom={false}
-        style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }}
-        attributionControl={false}
-      >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
-        {children}
-      </MapContainer>
-    );
-  }
-);
-
 
 const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
 
@@ -113,9 +97,16 @@ const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, contain
   
   return (
     <div className={containerClassName}>
-       <MapDisplay center={center}>
-          <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
-       </MapDisplay>
+      <MapContainer
+        center={center}
+        zoom={3}
+        scrollWheelZoom={false}
+        style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }}
+        attributionControl={false}
+      >
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+        <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
+      </MapContainer>
     </div>
   );
 };
