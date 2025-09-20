@@ -24,7 +24,7 @@ interface RouteMapProps {
 
 const createAirportIcon = (code: string) => {
   return divIcon({
-    html: `<div class="bg-primary/80 text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-primary-foreground shadow-md">${code}</div>`,
+    html: `<div class="bg-primary/80 text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-primary-foreground shadow-md">${code.substring(0, 3)}</div>`,
     className: 'bg-transparent border-none',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
@@ -38,13 +38,16 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
   React.useEffect(() => {
     if (path.length > 1 && airports.origin.coords && airports.destination.coords) {
         const bounds = [airports.origin.coords, airports.destination.coords];
-        map.fitBounds(bounds, { padding: [50, 50] });
+        if (isRerouted && path.length > 2) {
+            bounds.push(path[1]); // Add reroute point to bounds
+        }
+        map.fitBounds(bounds as LatLngExpression[], { padding: [50, 50] });
     } else if (airports.origin.coords) {
         map.setView(airports.origin.coords, 5);
     } else if (airports.destination.coords) {
         map.setView(airports.destination.coords, 5);
     }
-  }, [map, path, airports.origin.coords, airports.destination.coords]);
+  }, [map, path, airports.origin.coords, airports.destination.coords, isRerouted]);
 
   return (
     <>
@@ -61,9 +64,11 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
       {path.length > 0 && (
         <Polyline
           positions={path as LatLngExpression[]}
-          color={isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))'}
-          dashArray={isRerouted ? undefined : '5, 10'}
-          weight={3}
+          pathOptions={{
+            color: isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
+            dashArray: isRerouted ? undefined : '5, 10',
+            weight: 3
+          }}
         />
       )}
     </>
@@ -72,6 +77,8 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
 
 
 const RouteMap = React.memo(function RouteMap({ airports, path, isRerouted, containerClassName }: RouteMapProps) {
+  const mapId = React.useId();
+
   if (!airports.origin.coords || !airports.destination.coords) {
     return <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
         Enter valid airport codes to see the route.
