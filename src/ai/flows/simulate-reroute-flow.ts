@@ -22,7 +22,6 @@ export type SimulateRerouteInput = z.infer<typeof SimulateRerouteInputSchema>;
 const RouteDetailsSchema = z.object({
   delay: z.number().describe('The total delay time in minutes.'),
   cost: z.number().describe('The total cost of the flight in INR.'),
-  mapUrl: z.string().url().describe('A URL to an image visualizing the flight path.'),
 });
 
 const SimulateRerouteOutputSchema = z.object({
@@ -59,10 +58,6 @@ const prompt = ai.definePrompt({
       - Rerouting has a higher base cost of 725000 INR.
       - The final cost of the rerouted path is affected by the fuel cost factor. Multiply the rerouted base cost by the fuel cost factor percentage.
       - For example, if fuel cost factor is 120%, the final cost is 725000 * 1.20.
-
-  3.  **Map URLs:**
-      - For the original route, use the URL: \`https://picsum.photos/seed/{{origin}}-{{destination}}-orig/400/400\`
-      - For the rerouted path, use the URL: \`https://picsum.photos/seed/{{origin}}-{{destination}}-reroute/400/400\`
 
   Calculate the values and provide the output in the specified JSON format.
   `,

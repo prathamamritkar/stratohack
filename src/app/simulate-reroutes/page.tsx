@@ -10,13 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, GitBranch, Loader } from 'lucide-react';
-import Image from 'next/image';
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormMessage, FormItem } from '@/components/ui/form';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { airportCoordinates, getRerouteCoord } from '@/lib/airport-coordinates';
 
 const SimulationChart = lazy(() => import('@/components/simulation-chart'));
+const RouteMap = lazy(() => import('@/components/route-map'));
+
 
 const formSchema = z.object({
   origin: z.string().min(3, 'Airport code must be 3 characters').max(4, 'Airport code must be at most 4 characters').toUpperCase(),
@@ -45,6 +47,12 @@ export default function SimulateReroutesPage() {
     setError(null);
     setSimulationResult(null);
 
+    if (!airportCoordinates[values.origin] || !airportCoordinates[values.destination]) {
+      setError('Invalid airport code(s). Please use codes like JFK, SFO, LAX, BOM, DEL.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const result = await simulateReroute(values);
       setSimulationResult(result);
@@ -58,12 +66,26 @@ export default function SimulateReroutesPage() {
 
   const congestionValue = form.watch('congestion');
   const fuelCostValue = form.watch('fuelCost');
+  const origin = form.watch('origin');
+  const destination = form.watch('destination');
 
   const calculatedSavings = simulationResult ? simulationResult.original.delay - simulationResult.rerouted.delay : 0;
   const costIncrease = simulationResult ? simulationResult.rerouted.cost - simulationResult.original.cost : 0;
+  
+  const originCoords = airportCoordinates[origin];
+  const destCoords = airportCoordinates[destination];
+  
+  const originalRoute = originCoords && destCoords ? [originCoords, destCoords] : [];
+  const reroutedPath = originCoords && destCoords ? [originCoords, getRerouteCoord(originCoords, destCoords), destCoords] : [];
+
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+       <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossOrigin=""/>
+      </head>
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline flex items-center gap-3">
           <GitBranch className="text-primary w-8 h-8" />
@@ -231,15 +253,25 @@ export default function SimulateReroutesPage() {
             <CardContent className="grid md:grid-cols-2 gap-4">
                <div className="space-y-2">
                  <h3 className="font-semibold text-center">Original Route</h3>
-                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden border-2 border-transparent">
-                   <Image src={simulationResult?.original.mapUrl || "https://picsum.photos/seed/route-before/400/400"} alt="Route before" fill data-ai-hint="flight route map" className="object-cover" />
-                 </div>
+                 <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+                    <RouteMap 
+                      airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                      path={originalRoute}
+                      isRerouted={false} 
+                      containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
+                    />
+                 </Suspense>
                </div>
                <div className="space-y-2">
                  <h3 className="font-semibold text-center">Rerouted Path</h3>
-                 <div className="aspect-square w-full rounded-lg bg-muted relative overflow-hidden border-2 border-primary">
-                    <Image src={simulationResult?.rerouted.mapUrl || "https://picsum.photos/seed/route-after/400/400"} alt="Route after" fill data-ai-hint="alternate flight route" className="object-cover" />
-                 </div>
+                 <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+                    <RouteMap 
+                        airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                        path={reroutedPath} 
+                        isRerouted={true}
+                        containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
+                    />
+                 </Suspense>
                </div>
             </CardContent>
           </Card>
