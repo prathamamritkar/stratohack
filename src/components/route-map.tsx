@@ -46,6 +46,12 @@ const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airpor
     } else if (airports.destination.coords) {
         map.setView(airports.destination.coords, 5);
     }
+    
+    // Cleanup function to remove map on component unmount
+    return () => {
+        map.remove();
+    };
+
   }, [map, path, airports.origin.coords, airports.destination.coords, isRerouted]);
 
   return (
