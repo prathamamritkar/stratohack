@@ -80,12 +80,9 @@ const RouteMap = React.memo(function RouteMap({ airports, path, isRerouted, cont
   
   const center = getMidpoint(airports.origin.coords, airports.destination.coords);
   
-  // A unique key for the container to ensure it's re-created if core props change, but stable otherwise.
-  const mapKey = `${airports.origin.code}-${airports.destination.code}`;
-
   return (
     <div className={containerClassName}>
-      <MapContainer key={mapKey} center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
+      <MapContainer center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
         />
