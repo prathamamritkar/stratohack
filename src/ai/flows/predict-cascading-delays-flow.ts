@@ -11,7 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const PredictCascadingDelaysInputSchema = z.object({
+const PredictCascadingDelaysInputSchema = z.object({
   congestedAirport: z.string().describe('The IATA code of the congested airport.'),
 });
 export type PredictCascadingDelaysInput = z.infer<typeof PredictCascadingDelaysInputSchema>;
@@ -23,7 +23,7 @@ const AffectedAirportSchema = z.object({
   predictedDelay: z.number().describe('The predicted delay in minutes.'),
 });
 
-export const PredictCascadingDelaysOutputSchema = z.object({
+const PredictCascadingDelaysOutputSchema = z.object({
   affectedAirports: z.array(AffectedAirportSchema).describe('A ranked list of airports likely to be affected by cascading delays.'),
 });
 export type PredictCascadingDelaysOutput = z.infer<typeof PredictCascadingDelaysOutputSchema>;
