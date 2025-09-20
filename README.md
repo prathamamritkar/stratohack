@@ -24,7 +24,7 @@ An interactive map that displays major global airports and the flight routes con
 A predictive tool that simulates the ripple effect of congestion at a major airport. By inputting a congested airport's IATA code (e.g., JFK), the application uses a predictive model to identify which connected airports are most likely to experience subsequent delays. The results are visualized on a map with color-coded pins indicating risk levels and polylines showing delay propagation paths.
 
 ### 3. Rerouting Strategy Simulation
-A simulation dashboard that compares a direct flight path against a realistic, algorithmically determined reroute. The tool calculates and visualizes the trade-offs between the original and alternate routes in terms of delay time and cost, displaying both paths on a map for easy comparison.
+A simulation dashboard that compares a direct flight path against a realistic, algorithmically determined reroute. The tool calculates and a/visualizes the trade-offs between the original and alternate routes in terms of delay time and cost, displaying both paths on a map for easy comparison.
 
 ---
 
@@ -70,6 +70,6 @@ The application will be available at `http://localhost:9002`.
 
 ## Team Members
 
-- **Aparna Jha** (`24f2006184`) - Human Factors & Biometrics
-- **S.K. Zaheen** (`24f1001764`) - Predictive Modeling & Data Analytics
-- **Pratham Amritkar** (`24f2003909`) - AI & Systems Architecture
+- **S.K. Zaheen** (`24f1001764`)
+- **Aparna Jha** (`24f2006184`)
+- **Pratham Amritkar** (`24f2003909`)
