@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { LatLngExpression, divIcon } from 'leaflet';
 import { cn } from '@/lib/utils';
 import { getMidpoint } from '@/lib/airport-coordinates';
+import { useId } from 'react';
 
 interface Airport {
     code: string;
@@ -32,6 +33,7 @@ const createAirportIcon = (code: string) => {
 
 
 export default function RouteMap({ airports, path, isRerouted, containerClassName }: RouteMapProps) {
+  const mapId = useId();
   if (!airports.origin.coords || !airports.destination.coords) {
     return <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
         Enter valid airport codes to see the route.
@@ -41,7 +43,7 @@ export default function RouteMap({ airports, path, isRerouted, containerClassNam
   const center = getMidpoint(airports.origin.coords, airports.destination.coords);
 
   return (
-    <div className={containerClassName}>
+    <div id={`map-${isRerouted ? 'rerouted' : 'original'}-${mapId}`} key={mapId} className={containerClassName}>
       <MapContainer center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
