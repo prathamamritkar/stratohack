@@ -23,6 +23,7 @@ interface RouteMapProps {
     airports?: {
         origin: Airport;
         destination: Airport;
+        layover?: Airport;
     };
     path?: [number, number][];
     paths?: [number, number][][];
@@ -85,6 +86,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
   const onMapLoad = useCallback((map: google.maps.Map) => {
     const bounds = new window.google.maps.LatLngBounds();
     if (isNetworkMap || isPredictionMap) {
+        (paths || []).flat().forEach(coords => {
+             bounds.extend({ lat: coords[0], lng: coords[1] });
+        });
         Object.values(airportCoordinates).forEach(coords => {
             if (coords) bounds.extend({ lat: coords[0], lng: coords[1] });
         });
@@ -95,9 +99,9 @@ const RouteMap: React.FC<RouteMapProps> = ({
       map.setCenter(center);
       map.setZoom(isNetworkMap ? 2 : 4);
     } else {
-      map.fitBounds(bounds);
+       map.fitBounds(bounds, 50);
     }
-  }, [path, isNetworkMap, isPredictionMap, center]);
+  }, [path, paths, isNetworkMap, isPredictionMap, center]);
 
   if (!apiKey) {
     return (
@@ -151,14 +155,14 @@ const RouteMap: React.FC<RouteMapProps> = ({
           options={{ styles: mapStyles, disableDefaultUI: true, zoomControl: true }}
         >
             {isNetworkMap && Object.entries(airportCoordinates).map(([code, coords]) => (
-                <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={markerLabel(code)} />
+                <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={markerLabel(code, 'white')} />
             ))}
 
             {isPredictionMap && originAirport?.coords && (
                  <MarkerF 
                     position={{ lat: originAirport.coords[0], lng: originAirport.coords[1] }} 
                     label={markerLabel(originAirport.code, 'white')}
-                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: 'blue', fillOpacity: 1, strokeWeight: 0 }}
+                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: 'hsl(var(--primary))', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white' }}
                  />
             )}
             {isPredictionMap && affectedAirports?.map((airport) => (
@@ -176,8 +180,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
                     position={{ lat: selectedAirport.coords[0], lng: selectedAirport.coords[1] }}
                     onCloseClick={() => setSelectedAirport(null)}
                 >
-                    <div className="bg-background text-foreground p-2 rounded-lg border-none">
-                        <h4 className="font-bold text-base">{selectedAirport.airport}</h4>
+                    <div className="bg-card text-card-foreground p-2 rounded-lg border-none shadow-lg">
+                        <h4 className="font-bold text-base text-primary">{selectedAirport.airport}</h4>
                         <p>Delay: {selectedAirport.predictedDelay} mins</p>
                         <p>Probability: {selectedAirport.delayProbability.toFixed(1)}%</p>
                     </div>
@@ -188,11 +192,12 @@ const RouteMap: React.FC<RouteMapProps> = ({
               <>
                 <MarkerF position={{ lat: airports.origin.coords[0], lng: airports.origin.coords[1] }} label={markerLabel(airports.origin.code)} />
                 <MarkerF position={{ lat: airports.destination.coords[0], lng: airports.destination.coords[1] }} label={markerLabel(airports.destination.code)}/>
+                {airports.layover?.coords && <MarkerF position={{ lat: airports.layover.coords[0], lng: airports.layover.coords[1] }} label={markerLabel(airports.layover.code)} />}
               </>
             )}
 
             {path && (
-                <Polyline path={path.map(p => ({ lat: p[0], lng: p[1] }))} options={{ strokeColor: isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))', strokeOpacity: 1.0, strokeWeight: 3 }}/>
+                <Polyline path={path.map(p => ({ lat: p[0], lng: p[1] }))} options={{ strokeColor: isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))', strokeOpacity: 1.0, strokeWeight: 3, geodesic: true }}/>
             )}
 
             {paths && paths.map((p, i) => (

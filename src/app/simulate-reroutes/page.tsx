@@ -10,12 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, GitBranch, Loader2 } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader2 } from 'lucide-react';
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { airportCoordinates, getRerouteCoord } from '@/lib/airport-coordinates';
+import { airportCoordinates, findBestReroute } from '@/lib/airport-coordinates';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -82,7 +82,10 @@ export default function SimulateReroutesPage() {
   const destCoords = airportCoordinates[destination];
   
   const originalRoute = originCoords && destCoords ? [originCoords, destCoords] : [];
-  const reroutedPath = originCoords && destCoords ? [originCoords, getRerouteCoord(originCoords, destCoords), destCoords] : [];
+  
+  const rerouteAirportCode = originCoords && destCoords ? findBestReroute(origin, destination) : null;
+  const rerouteAirportCoords = rerouteAirportCode ? airportCoordinates[rerouteAirportCode] : null;
+  const reroutedPath = originCoords && destCoords && rerouteAirportCoords ? [originCoords, rerouteAirportCoords, destCoords] : [];
 
 
   return (
@@ -240,6 +243,9 @@ export default function SimulateReroutesPage() {
           <Card className={`transition-opacity`}>
              <CardHeader>
               <CardTitle>Route Visualization</CardTitle>
+              <CardDescription>
+                Rerouted through {rerouteAirportCode ? <span className="font-bold text-primary">{rerouteAirportCode}</span> : '...'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
                <Tabs defaultValue="original" className="w-full">
@@ -259,7 +265,11 @@ export default function SimulateReroutesPage() {
                 <TabsContent value="rerouted" className="mt-4">
                     <RouteMap
                         key="rerouted-map"
-                        airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                        airports={{
+                            origin: {code: origin, coords: originCoords}, 
+                            destination: {code: destination, coords: destCoords},
+                            layover: rerouteAirportCode ? { code: rerouteAirportCode, coords: rerouteAirportCoords } : undefined,
+                        }}
                         path={reroutedPath} 
                         isRerouted={true}
                         containerClassName="h-[400px] w-full rounded-lg bg-muted relative overflow-hidden"
