@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader2 } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader } from 'lucide-react';
 import Image from 'next/image';
 import {
   ChartContainer,
@@ -182,7 +182,7 @@ export default function SimulateReroutesPage() {
                   <Button type="submit" disabled={isLoading} className="w-full">
                      {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
                         Simulating...
                       </>
                     ) : (
@@ -204,7 +204,7 @@ export default function SimulateReroutesPage() {
             <CardContent>
               {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground flex items-center justify-center">
-                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    <Loader className="mr-2 h-6 w-6 animate-spin" />
                     <p>Running simulation...</p>
                   </div>
               ) : error ? (
