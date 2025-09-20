@@ -21,7 +21,7 @@ export type SimulateRerouteInput = z.infer<typeof SimulateRerouteInputSchema>;
 
 const RouteDetailsSchema = z.object({
   delay: z.number().describe('The total delay time in minutes.'),
-  cost: z.number().describe('The total cost of the flight in USD.'),
+  cost: z.number().describe('The total cost of the flight in INR.'),
   mapUrl: z.string().url().describe('A URL to an image visualizing the flight path.'),
 });
 
@@ -50,15 +50,15 @@ const prompt = ai.definePrompt({
   **Simulation Logic:**
   1.  **Original Route:**
       - The base delay is 20 minutes.
-      - The base cost is $8,500.
+      - The base cost is 700000 INR.
       - Delay increases with congestion. For every 1% of congestion, add 2 minutes of delay to the base delay.
       - Cost is not affected by congestion on the original route.
 
   2.  **Rerouted Path:**
       - Rerouting avoids all congestion delay, so the delay is a flat 45 minutes regardless of the congestion input.
-      - Rerouting has a higher base cost of $8,800.
+      - Rerouting has a higher base cost of 725000 INR.
       - The final cost of the rerouted path is affected by the fuel cost factor. Multiply the rerouted base cost by the fuel cost factor percentage.
-      - For example, if fuel cost factor is 120%, the final cost is $8,800 * 1.20.
+      - For example, if fuel cost factor is 120%, the final cost is 725000 * 1.20.
 
   3.  **Map URLs:**
       - For the original route, use the URL: \`https://picsum.photos/seed/{{origin}}-{{destination}}-orig/400/400\`

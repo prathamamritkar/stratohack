@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader2, GitBranch } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, GitBranch, Loader } from 'lucide-react';
 import Image from 'next/image';
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -167,7 +167,7 @@ export default function SimulateReroutesPage() {
                   <AnimatedButton type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                      {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
                         Simulating...
                       </>
                     ) : (
@@ -189,7 +189,7 @@ export default function SimulateReroutesPage() {
             <CardContent>
               {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground flex items-center justify-center">
-                    <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                    <Loader className="mr-2 h-6 w-6 animate-spin" />
                     <p>Running simulation...</p>
                   </div>
               ) : error ? (
@@ -204,7 +204,7 @@ export default function SimulateReroutesPage() {
                      <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">Cost Impact</p>
                         <p className={`text-3xl font-bold ${costIncrease > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                          {costIncrease > 0 ? '+' : '-'}${Math.abs(costIncrease).toLocaleString()}
+                          {costIncrease > 0 ? '+' : '-'}₹{Math.abs(costIncrease).toLocaleString('en-IN')}
                         </p>
                     </div>
                   </div>

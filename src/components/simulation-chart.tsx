@@ -13,7 +13,7 @@ const chartConfig = {
     color: "hsl(var(--accent))",
   },
   cost: {
-    label: "Cost ($)",
+    label: "Cost (₹)",
     color: "hsl(var(--primary))",
   },
 };
@@ -35,7 +35,15 @@ export default function SimulationChart({ data }: SimulationChartProps) {
         <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
         <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--accent))" />
         <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--primary))" />
-        <RechartsTooltip cursor={false} content={<ChartTooltipContent />} />
+        <RechartsTooltip cursor={false} content={<ChartTooltipContent formatter={(value, name) => {
+          if (name === 'cost') {
+            return [new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(value as number), 'Cost'];
+          }
+          if (name === 'delayTime') {
+            return [`${value} min`, 'Delay Time'];
+          }
+          return [value, name];
+        }} />} />
         <Bar dataKey="delayTime" yAxisId="left" fill="var(--color-delayTime)" radius={4} />
         <Bar dataKey="cost" yAxisId="right" fill="var(--color-cost)" radius={4} />
       </BarChart>
