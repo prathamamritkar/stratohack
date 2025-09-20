@@ -14,7 +14,6 @@ import {
   Network,
   Zap,
   GitBranch,
-  Trophy,
   Info,
   Plane,
 } from 'lucide-react';
@@ -25,7 +24,6 @@ const menuItems = [
   { href: '/', label: 'Network', icon: Network },
   { href: '/predict-delays', label: 'Predict Delays', icon: Zap },
   { href: '/simulate-reroutes', label: 'Simulate Reroutes', icon: GitBranch },
-  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/about', label: 'About', icon: Info },
 ];
 
