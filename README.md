@@ -70,6 +70,6 @@ The application will be available at `http://localhost:9002`.
 
 ## Team Members
 
-- **Pratham Amritkar** (`24f2003909`) - AI & Systems Architecture
 - **Aparna Jha** (`24f2006184`) - Human Factors & Biometrics
 - **S.K. Zaheen** (`24f1001764`) - Predictive Modeling & Data Analytics
+- **Pratham Amritkar** (`24f2003909`) - AI & Systems Architecture
