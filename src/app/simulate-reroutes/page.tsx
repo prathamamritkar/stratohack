@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, PlaneTakeoff, PlaneLand, Percent, Fuel } from 'lucide-react';
+import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel } from 'lucide-react';
 import Image from 'next/image';
 import {
   ChartContainer,
@@ -72,7 +72,7 @@ export default function SimulateReroutesPage() {
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="destination">Destination</Label>
                    <div className="relative">
-                    <PlaneLand className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <PlaneLanding className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="destination" defaultValue="SFO" className="pl-9" />
                   </div>
                 </div>
