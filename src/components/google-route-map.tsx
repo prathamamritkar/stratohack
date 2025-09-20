@@ -134,6 +134,13 @@ const RouteMap: React.FC<RouteMapProps> = ({
     return 'yellow'; // Low risk
   };
 
+  const markerLabel = (text: string, color: string = 'white') => ({
+      text,
+      color,
+      fontWeight: 'bold',
+      fontSize: '12px'
+  });
+
   return (
     <div className={containerClassName}>
         <GoogleMap
@@ -144,22 +151,22 @@ const RouteMap: React.FC<RouteMapProps> = ({
           options={{ styles: mapStyles, disableDefaultUI: true, zoomControl: true }}
         >
             {isNetworkMap && Object.entries(airportCoordinates).map(([code, coords]) => (
-                <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={{ text: code, color: 'white', fontWeight: 'bold' }} />
+                <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={markerLabel(code)} />
             ))}
 
             {isPredictionMap && originAirport?.coords && (
                  <MarkerF 
                     position={{ lat: originAirport.coords[0], lng: originAirport.coords[1] }} 
-                    label={{ text: originAirport.code, color: 'white', fontWeight: 'bold' }}
-                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: 'blue', fillOpacity: 1, strokeWeight: 0 }}
+                    label={markerLabel(originAirport.code, 'white')}
+                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: 'blue', fillOpacity: 1, strokeWeight: 0 }}
                  />
             )}
             {isPredictionMap && affectedAirports?.map((airport) => (
                 airport.coords && <MarkerF 
                     key={airport.airport} 
                     position={{ lat: airport.coords[0], lng: airport.coords[1] }}
-                    label={{ text: airport.airport, color: 'black', fontWeight: 'bold' }}
-                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: getPinColor(airport.delayProbability), fillOpacity: 1, strokeWeight: 0 }}
+                    label={markerLabel(airport.airport, 'black')}
+                    icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: getPinColor(airport.delayProbability), fillOpacity: 1, strokeWeight: 0 }}
                     onClick={() => setSelectedAirport(airport)}
                 />
             ))}
@@ -179,8 +186,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
             {!isNetworkMap && !isPredictionMap && airports?.origin.coords && airports?.destination.coords && (
               <>
-                <MarkerF position={{ lat: airports.origin.coords[0], lng: airports.origin.coords[1] }} label={{ text: airports.origin.code, color: 'white', fontWeight: 'bold' }} />
-                <MarkerF position={{ lat: airports.destination.coords[0], lng: airports.destination.coords[1] }} label={{ text: airports.destination.code, color: 'white', fontWeight: 'bold' }}/>
+                <MarkerF position={{ lat: airports.origin.coords[0], lng: airports.origin.coords[1] }} label={markerLabel(airports.origin.code)} />
+                <MarkerF position={{ lat: airports.destination.coords[0], lng: airports.destination.coords[1] }} label={markerLabel(airports.destination.code)}/>
               </>
             )}
 
@@ -198,3 +205,6 @@ const RouteMap: React.FC<RouteMapProps> = ({
 };
 
 export default RouteMap;
+
+
+    
