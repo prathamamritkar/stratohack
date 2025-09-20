@@ -16,11 +16,13 @@ import { Form, FormControl, FormField, FormMessage, FormItem } from '@/component
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { airportCoordinates, getRerouteCoord } from '@/lib/airport-coordinates';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 const SimulationChart = dynamic(() => import('@/components/simulation-chart'));
 const RouteMap = dynamic(() => import('@/components/route-map'), { 
   ssr: false,
-  loading: () => <Skeleton className="h-[300px] w-full" />
+  loading: () => <Skeleton className="h-[400px] w-full" />
 });
 
 
@@ -246,33 +248,40 @@ export default function SimulateReroutesPage() {
           </Card>
 
           <Card className={`transition-opacity ${!isLoading && !simulationResult ? 'opacity-50' : ''}`}>
-            <CardHeader>
+             <CardHeader>
               <CardTitle>Route Visualization</CardTitle>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-4">
-               <div className="space-y-2">
-                 <h3 className="font-semibold text-center">Original Route</h3>
-                 <RouteMap 
-                    airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
-                    path={originalRoute}
-                    isRerouted={false} 
-                    containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
-                  />
-               </div>
-               <div className="space-y-2">
-                 <h3 className="font-semibold text-center">Rerouted Path</h3>
-                 <RouteMap 
-                      airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
-                      path={reroutedPath} 
-                      isRerouted={true}
-                      containerClassName="h-[300px] w-full rounded-lg bg-muted relative overflow-hidden"
-                  />
-               </div>
+            <CardContent>
+               <Tabs defaultValue="original" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="original">Original Route</TabsTrigger>
+                  <TabsTrigger value="rerouted">Rerouted Path</TabsTrigger>
+                </TabsList>
+                <TabsContent value="original" className="mt-4">
+                    <RouteMap 
+                        key="original-map"
+                        airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                        path={originalRoute}
+                        isRerouted={false} 
+                        containerClassName="h-[400px] w-full rounded-lg bg-muted relative overflow-hidden"
+                      />
+                </TabsContent>
+                <TabsContent value="rerouted" className="mt-4">
+                    <RouteMap
+                        key="rerouted-map"
+                        airports={{origin: {code: origin, coords: originCoords}, destination: {code: destination, coords: destCoords}}}
+                        path={reroutedPath} 
+                        isRerouted={true}
+                        containerClassName="h-[400px] w-full rounded-lg bg-muted relative overflow-hidden"
+                      />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>
   );
 }
+
+    
