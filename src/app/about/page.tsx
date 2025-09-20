@@ -5,6 +5,14 @@ import Image from 'next/image';
 
 const teamMembers = [
   {
+    id: '24f1001764',
+    name: 'S.K. Zaheen',
+    specialization: 'Predictive Modeling & Data Analytics',
+    field: 'Data Science',
+    initials: 'SZ',
+    icon: <BrainCircuit className="h-5 w-5 text-primary" />,
+  },
+  {
     id: '24f2003909',
     name: 'Pratham Amritkar',
     specialization: 'AI & Systems Architecture',
@@ -20,22 +28,6 @@ const teamMembers = [
     initials: 'AJ',
     icon: <Dna className="h-5 w-5 text-primary" />,
   },
-  {
-    id: '22f3003240',
-    name: 'Abhishek Chopra',
-    specialization: 'Aerospace Dynamics & Propulsion',
-    field: 'Mechanical Engineering',
-    initials: 'AC',
-    icon: <Rocket className="h-5 w-5 text-primary" />,
-  },
-  {
-    id: '24f1001764',
-    name: 'S.K. Zaheen',
-    specialization: 'Predictive Modeling & Data Analytics',
-    field: 'Data Science',
-    initials: 'SZ',
-    icon: <BrainCircuit className="h-5 w-5 text-primary" />,
-  },
 ];
 
 export default function AboutPage() {
@@ -49,7 +41,7 @@ export default function AboutPage() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teamMembers.map((member) => (
             <Card key={member.id} className="text-center transition-all hover:shadow-primary/20">
               <CardHeader className="items-center">
