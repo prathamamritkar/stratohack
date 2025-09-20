@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { SiteHeader } from '@/components/layout/header';
 import { SiteSidebar } from '@/components/layout/sidebar';
 import { Toaster } from "@/components/ui/toaster";
+import { PageTransition } from '@/components/layout/page-transition';
 
 export const metadata: Metadata = {
   title: 'AirNavFlow',
@@ -27,7 +28,9 @@ export default function RootLayout({
           <SiteSidebar />
           <SidebarInset>
             <SiteHeader />
-            {children}
+             <PageTransition>
+              {children}
+            </PageTransition>
           </SidebarInset>
           <Toaster />
         </SidebarProvider>

@@ -1,24 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, PlaneTakeoff, PlaneLanding, Percent, Fuel, Loader } from 'lucide-react';
 import Image from 'next/image';
-import {
-  ChartContainer,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { simulateReroute, SimulateRerouteOutput } from '@/ai/flows/simulate-reroute-flow';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormMessage } from '@/components/ui/form';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const SimulationChart = lazy(() => import('@/components/simulation-chart'));
 
 const formSchema = z.object({
   origin: z.string().min(3, 'Airport code must be 3 characters').max(4, 'Airport code must be at most 4 characters').toUpperCase(),
@@ -26,17 +24,6 @@ const formSchema = z.object({
   congestion: z.number().min(0).max(100),
   fuelCost: z.number().min(0).max(200),
 });
-
-const chartConfig = {
-  delayTime: {
-    label: "Delay Time (min)",
-    color: "hsl(var(--primary))",
-  },
-  cost: {
-    label: "Cost ($)",
-    color: "hsl(var(--accent-foreground))",
-  },
-};
 
 export default function SimulateReroutesPage() {
   const [simulationResult, setSimulationResult] = useState<SimulateRerouteOutput | null>(null);
@@ -71,11 +58,6 @@ export default function SimulateReroutesPage() {
 
   const congestionValue = form.watch('congestion');
   const fuelCostValue = form.watch('fuelCost');
-  
-  const simulationData = simulationResult ? [
-    { name: 'Original Route', delayTime: simulationResult.original.delay, cost: simulationResult.original.cost },
-    { name: 'Simulated Reroute', delayTime: simulationResult.rerouted.delay, cost: simulationResult.rerouted.cost },
-  ] : [];
 
   const calculatedSavings = simulationResult ? simulationResult.original.delay - simulationResult.rerouted.delay : 0;
   const costIncrease = simulationResult ? simulationResult.rerouted.cost - simulationResult.original.cost : 0;
@@ -179,7 +161,7 @@ export default function SimulateReroutesPage() {
                       )}
                     />
                   
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <AnimatedButton type="submit" disabled={isLoading} className="w-full">
                      {isLoading ? (
                       <>
                         <Loader className="mr-2 h-4 w-4 animate-spin" />
@@ -188,7 +170,7 @@ export default function SimulateReroutesPage() {
                     ) : (
                       'Simulate Reroute'
                     )}
-                  </Button>
+                  </AnimatedButton>
                 </form>
               </Form>
             </CardContent>
@@ -226,17 +208,9 @@ export default function SimulateReroutesPage() {
                   
                   <Separator />
 
-                  <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                    <BarChart data={simulationData} accessibilityLayer>
-                      <CartesianGrid vertical={false} />
-                      <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-                       <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" />
-                       <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--accent-foreground))" />
-                      <RechartsTooltip cursor={false} content={<ChartTooltipContent />} />
-                      <Bar dataKey="delayTime" yAxisId="left" fill="var(--color-delayTime)" radius={4} />
-                      <Bar dataKey="cost" yAxisId="right" fill="var(--color-cost)" radius={4} />
-                    </BarChart>
-                  </ChartContainer>
+                  <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
+                     <SimulationChart data={simulationResult} />
+                  </Suspense>
 
                 </div>
               ) : (
