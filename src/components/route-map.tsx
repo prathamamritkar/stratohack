@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngExpression, divIcon } from 'leaflet';
 import { cn } from '@/lib/utils';
@@ -31,58 +31,6 @@ const createAirportIcon = (code: string) => {
   });
 };
 
-const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airports, path, isRerouted }) => {
-  const map = useMap();
-
-  React.useEffect(() => {
-    if (path.length > 1 && airports.origin.coords && airports.destination.coords) {
-        const bounds = [airports.origin.coords, airports.destination.coords];
-        if (isRerouted && path.length > 2) {
-            bounds.push(path[1]);
-        }
-        map.fitBounds(bounds as LatLngExpression[], { padding: [50, 50] });
-    } else if (airports.origin.coords) {
-        map.setView(airports.origin.coords, 5);
-    } else if (airports.destination.coords) {
-        map.setView(airports.destination.coords, 5);
-    }
-  }, [map, path, airports.origin.coords, airports.destination.coords, isRerouted]);
-
-  // Cleanup function to explicitly remove the map on component unmount
-  React.useEffect(() => {
-    return () => {
-        map.remove();
-    };
-  }, [map]);
-
-
-  return (
-    <>
-      {airports.origin.coords && (
-        <Marker position={airports.origin.coords as LatLngExpression} icon={createAirportIcon(airports.origin.code)}>
-          <Popup>{airports.origin.code} - Origin</Popup>
-        </Marker>
-      )}
-      {airports.destination.coords && (
-        <Marker position={airports.destination.coords as LatLngExpression} icon={createAirportIcon(airports.destination.code)}>
-          <Popup>{airports.destination.code} - Destination</Popup>
-        </Marker>
-      )}
-      {path.length > 0 && (
-        <Polyline
-          positions={path as LatLngExpression[]}
-          pathOptions={{
-            color: isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
-            dashArray: isRerouted ? undefined : '5, 10',
-            weight: 3
-          }}
-        />
-      )}
-    </>
-  );
-};
-
-
 const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, containerClassName }) => {
 
   if (!airports.origin.coords || !airports.destination.coords) {
@@ -105,7 +53,26 @@ const RouteMap: React.FC<RouteMapProps> = ({ airports, path, isRerouted, contain
         attributionControl={false}
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
-        <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
+         {airports.origin.coords && (
+            <Marker position={airports.origin.coords as LatLngExpression} icon={createAirportIcon(airports.origin.code)}>
+            <Popup>{airports.origin.code} - Origin</Popup>
+            </Marker>
+        )}
+        {airports.destination.coords && (
+            <Marker position={airports.destination.coords as LatLngExpression} icon={createAirportIcon(airports.destination.code)}>
+            <Popup>{airports.destination.code} - Destination</Popup>
+            </Marker>
+        )}
+        {path.length > 0 && (
+            <Polyline
+            positions={path as LatLngExpression[]}
+            pathOptions={{
+                color: isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
+                dashArray: isRerouted ? undefined : '5, 10',
+                weight: 3
+            }}
+            />
+        )}
       </MapContainer>
     </div>
   );
