@@ -14,7 +14,6 @@ import {
   Network,
   Zap,
   GitBranch,
-  Info,
   Plane,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +23,6 @@ const menuItems = [
   { href: '/', label: 'Network', icon: Network },
   { href: '/predict-delays', label: 'Predict Delays', icon: Zap },
   { href: '/simulate-reroutes', label: 'Simulate Reroutes', icon: GitBranch },
-  { href: '/about', label: 'About', icon: Info },
 ];
 
 export function SiteSidebar() {

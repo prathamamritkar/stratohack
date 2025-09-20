@@ -13,6 +13,13 @@ export const airportCoordinates: { [key: string]: [number, number] } = {
   'HND': [35.5494, 139.7798],
   'BOM': [19.0896, 72.8656],
   'DEL': [28.5562, 77.1000],
+  'AMS': [52.3105, 4.7683],
+  'FRA': [50.0379, 8.5622],
+  'IST': [41.2753, 28.7519],
+  'CAN': [23.3924, 113.3000],
+  'PEK': [40.0801, 116.5845],
+  'SYD': [-33.9399, 151.1753],
+  'GRU': [-23.4356, -46.4731],
 };
 
 export const getMidpoint = (coord1: [number, number], coord2: [number, number]): [number, number] => {
