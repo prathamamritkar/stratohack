@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 const SimulationChart = dynamic(() => import('@/components/simulation-chart'));
-const RouteMap = dynamic(() => import('@/components/route-map'), { 
+const RouteMap = dynamic(() => import('@/components/google-route-map'), { 
   ssr: false,
   loading: () => <Skeleton className="h-[400px] w-full" />
 });
@@ -283,5 +283,3 @@ export default function SimulateReroutesPage() {
     </div>
   );
 }
-
-    
