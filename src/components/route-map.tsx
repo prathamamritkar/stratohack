@@ -1,11 +1,11 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import * as React from "react"
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngExpression, divIcon } from 'leaflet';
 import { cn } from '@/lib/utils';
 import { getMidpoint } from '@/lib/airport-coordinates';
-import { useId } from 'react';
 
 interface Airport {
     code: string;
@@ -31,9 +31,47 @@ const createAirportIcon = (code: string) => {
   });
 };
 
+// Component to draw the path and markers
+const RoutePath: React.FC<Omit<RouteMapProps, 'containerClassName'>> = ({ airports, path, isRerouted }) => {
+  const map = useMap();
 
-export default function RouteMap({ airports, path, isRerouted, containerClassName }: RouteMapProps) {
-  const mapId = useId();
+  React.useEffect(() => {
+    if (path.length > 1 && airports.origin.coords && airports.destination.coords) {
+        const bounds = [airports.origin.coords, airports.destination.coords];
+        map.fitBounds(bounds, { padding: [50, 50] });
+    } else if (airports.origin.coords) {
+        map.setView(airports.origin.coords, 5);
+    } else if (airports.destination.coords) {
+        map.setView(airports.destination.coords, 5);
+    }
+  }, [map, path, airports.origin.coords, airports.destination.coords]);
+
+  return (
+    <>
+      {airports.origin.coords && (
+        <Marker position={airports.origin.coords as LatLngExpression} icon={createAirportIcon(airports.origin.code)}>
+          <Popup>{airports.origin.code} - Origin</Popup>
+        </Marker>
+      )}
+      {airports.destination.coords && (
+        <Marker position={airports.destination.coords as LatLngExpression} icon={createAirportIcon(airports.destination.code)}>
+          <Popup>{airports.destination.code} - Destination</Popup>
+        </Marker>
+      )}
+      {path.length > 0 && (
+        <Polyline
+          positions={path as LatLngExpression[]}
+          color={isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))'}
+          dashArray={isRerouted ? undefined : '5, 10'}
+          weight={3}
+        />
+      )}
+    </>
+  );
+};
+
+
+const RouteMap = React.memo(function RouteMap({ airports, path, isRerouted, containerClassName }: RouteMapProps) {
   if (!airports.origin.coords || !airports.destination.coords) {
     return <div className={cn("flex items-center justify-center text-muted-foreground bg-muted", containerClassName)}>
         Enter valid airport codes to see the route.
@@ -41,35 +79,20 @@ export default function RouteMap({ airports, path, isRerouted, containerClassNam
   }
   
   const center = getMidpoint(airports.origin.coords, airports.destination.coords);
+  
+  // A unique key for the container to ensure it's re-created if core props change, but stable otherwise.
+  const mapKey = `${airports.origin.code}-${airports.destination.code}`;
 
   return (
-    <div id={`map-${isRerouted ? 'rerouted' : 'original'}-${mapId}`} key={mapId} className={containerClassName}>
-      <MapContainer center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
+    <div className={containerClassName}>
+      <MapContainer key={mapKey} center={center} zoom={3} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: 'hsl(var(--muted))' }} attributionControl={false}>
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
         />
-
-        {airports.origin.coords && (
-            <Marker position={airports.origin.coords as LatLngExpression} icon={createAirportIcon(airports.origin.code)}>
-                <Popup>{airports.origin.code} - Origin</Popup>
-            </Marker>
-        )}
-        
-        {airports.destination.coords && (
-            <Marker position={airports.destination.coords as LatLngExpression} icon={createAirportIcon(airports.destination.code)}>
-                 <Popup>{airports.destination.code} - Destination</Popup>
-            </Marker>
-        )}
-
-        {path.length > 0 && (
-            <Polyline 
-                positions={path as LatLngExpression[]} 
-                color={isRerouted ? 'hsl(var(--primary))' : 'hsl(var(--accent))'}
-                dashArray={isRerouted ? undefined : '5, 10'}
-                weight={3}
-            />
-        )}
+        <RoutePath airports={airports} path={path} isRerouted={isRerouted} />
       </MapContainer>
     </div>
   );
-}
+});
+
+export default RouteMap;
