@@ -5,7 +5,7 @@ import React, { useCallback, useMemo } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF, Polyline, InfoWindow } from '@react-google-maps/api';
 import { cn } from '@/lib/utils';
 import { Skeleton } from "./ui/skeleton";
-import { getMidpoint, airportCoordinates } from "@/lib/airport-coordinates";
+import { getMidpoint } from "@/lib/airport-coordinates";
 
 interface Airport {
     code: string;
@@ -29,6 +29,7 @@ interface RouteMapProps {
     paths?: [number, number][][];
     isRerouted?: boolean;
     isNetworkMap?: boolean;
+    allAirports?: Airport[];
     isPredictionMap?: boolean;
     originAirport?: Airport;
     affectedAirports?: AffectedAirport[];
@@ -62,6 +63,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
     paths,
     isRerouted, 
     isNetworkMap,
+    allAirports,
     isPredictionMap,
     originAirport,
     affectedAirports,
@@ -85,13 +87,16 @@ const RouteMap: React.FC<RouteMapProps> = ({
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
     const bounds = new window.google.maps.LatLngBounds();
-    if (isNetworkMap || isPredictionMap) {
+    if (isNetworkMap && allAirports) {
+        allAirports.forEach(airport => {
+            if(airport.coords) bounds.extend({ lat: airport.coords[0], lng: airport.coords[1] });
+        });
+    } else if (isPredictionMap) {
         (paths || []).flat().forEach(coords => {
              bounds.extend({ lat: coords[0], lng: coords[1] });
         });
-        Object.values(airportCoordinates).forEach(coords => {
-            if (coords) bounds.extend({ lat: coords[0], lng: coords[1] });
-        });
+        if(originAirport?.coords) bounds.extend({ lat: originAirport.coords[0], lng: originAirport.coords[1] });
+
     } else if (path) {
         path.forEach(p => bounds.extend({ lat: p[0], lng: p[1] }));
     }
@@ -101,7 +106,7 @@ const RouteMap: React.FC<RouteMapProps> = ({
     } else {
        map.fitBounds(bounds, 50);
     }
-  }, [path, paths, isNetworkMap, isPredictionMap, center]);
+  }, [path, paths, isNetworkMap, allAirports, isPredictionMap, originAirport, center]);
 
   if (!apiKey) {
     return (
@@ -154,8 +159,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
           onLoad={onMapLoad}
           options={{ styles: mapStyles, disableDefaultUI: true, zoomControl: true }}
         >
-            {isNetworkMap && Object.entries(airportCoordinates).map(([code, coords]) => (
-                <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={markerLabel(code, 'white')} />
+            {isNetworkMap && allAirports?.map(({ code, coords }) => (
+                coords && <MarkerF key={code} position={{ lat: coords[0], lng: coords[1] }} label={markerLabel(code, 'white')} />
             ))}
 
             {isPredictionMap && originAirport?.coords && (
@@ -210,6 +215,3 @@ const RouteMap: React.FC<RouteMapProps> = ({
 };
 
 export default RouteMap;
-
-
-    

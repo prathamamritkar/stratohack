@@ -9,6 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { getAirportData } from '@/lib/data-loader';
 import { z } from 'genkit';
 
 const PredictCascadingDelaysInputSchema = z.object({
@@ -32,18 +33,19 @@ export async function predictCascadingDelays(input: PredictCascadingDelaysInput)
   return predictCascadingDelaysFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const promptTemplate = ai.definePrompt({
   name: 'predictCascadingDelaysPrompt',
-  input: { schema: PredictCascadingDelaysInputSchema },
+  input: { schema: PredictCascadingDelaysInputSchema.extend({ connectedAirports: z.array(z.string()) }) },
   output: { schema: PredictCascadingDelaysOutputSchema },
   prompt: `You are a GNN-based airport traffic prediction model. Your task is to predict cascading delays from a congested airport.
 
   **Input:**
   - Congested Airport: {{{congestedAirport}}}
+  - Connected Airports: {{{json an=connectedAirports}}}
   
   **Simulation Logic:**
-  1. Identify the top 5 most connected airports to the congested airport. The connected airports are ORD, LAX, DFW, DEN, ATL.
-  2. For each connected airport, generate a realistic but varied delay probability and predicted delay time.
+  1. From the list of connected airports, select the top 5 most relevant ones for this simulation.
+  2. For each of the 5 selected airports, generate a realistic but varied delay probability and predicted delay time.
      - Probability should be high for the most connected airports and lower for others.
      - Predicted delay should correlate with probability (higher probability = higher delay).
      - Ensure the output is a ranked list, with the highest probability first.
@@ -60,7 +62,16 @@ const predictCascadingDelaysFlow = ai.defineFlow(
     outputSchema: PredictCascadingDelaysOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // In a real application, you would have a graph and find the actual connected airports.
+    // Here, we'll just grab a random subset of airports from our dataset to simulate this.
+    const allAirports = await getAirportData();
+    const connectedAirports = allAirports
+      .map(a => a.code)
+      .filter(code => code !== input.congestedAirport)
+      .sort(() => 0.5 - Math.random()) // Shuffle
+      .slice(0, 10); // Take 10 random ones
+      
+    const { output } = await promptTemplate({...input, connectedAirports });
     return output!;
   }
 );
