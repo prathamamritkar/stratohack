@@ -1,52 +1,100 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import CytoscapeComponent from 'react-cytoscapejs';
-import { Layout, Spin } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 
-const { Content } = Layout;
+type Element = { data: any };
+type GraphPayload = { elements: Element[] };
 
 export default function VisualizeNetworkPage() {
-    const [graphData, setGraphData] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const cyRef = useRef<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetch('/api/network-data')
-            .then(res => res.json())
-            .then(data => {
-                setGraphData(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to fetch network data", err);
-                setLoading(false);
-            });
-    }, []);
+  useEffect(() => {
+    let mounted = true;
+    async function run() {
+      try {
+        const res = await fetch('/api/network-data');
+        const payload: GraphPayload = await res.json();
 
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen"><Spin size="large" /></div>;
+        const cytoscape = (await import('cytoscape')).default;
+
+        if (!mounted || !containerRef.current) return;
+
+        if (cyRef.current) {
+          cyRef.current.destroy();
+          cyRef.current = null;
+        }
+
+        cyRef.current = cytoscape({
+          container: containerRef.current,
+          elements: payload.elements,
+          style: [
+            {
+              selector: 'node',
+              style: {
+                'background-color': '#2563eb',
+                'label': 'data(label)',
+                'color': '#111827',
+                'font-size': 10,
+                'text-halign': 'center',
+                'text-valign': 'center',
+                'width': 14,
+                'height': 14,
+              },
+            },
+            {
+              selector: 'edge',
+              style: {
+                'width': 'mapData(count, 1, 100, 1, 6)',
+                'line-color': '#9ca3af',
+                'target-arrow-color': '#9ca3af',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier',
+                'opacity': 0.7,
+              },
+            },
+            {
+              selector: 'node:selected',
+              style: { 'background-color': '#f59e0b' },
+            },
+          ],
+          layout: { name: 'cose', fit: true, padding: 20 },
+          wheelSensitivity: 0.2,
+        });
+
+        // Basic tooltip via title attribute
+        cyRef.current.nodes().forEach((n: any) => {
+          const data = n.data();
+          n.qtip && n.qtip.destroy?.();
+          n._private.data.title = `${data.label}\n(${data.city ?? 'N/A'}, ${data.country ?? 'N/A'})`;
+        });
+
+        setLoading(false);
+      } catch (e: any) {
+        console.error(e);
+        setErr(e?.message ?? 'Failed to load network');
+        setLoading(false);
+      }
     }
+    run();
+    return () => {
+      mounted = false;
+      if (cyRef.current) {
+        cyRef.current.destroy();
+        cyRef.current = null;
+      }
+    };
+  }, []);
 
-    return (
-        <Content style={{ padding: '0 50px', marginTop: 64 }}>
-            <h1 className="text-3xl font-bold text-center my-8">Airport Network Visualization</h1>
-            <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-                <CytoscapeComponent
-                    elements={CytoscapeComponent.normalizeElements(graphData)}
-                    style={{ width: '100%', height: '70vh' }}
-                    stylesheet={[
-                        {
-                            selector: 'node',
-                            style: { 'background-color': '#666', 'label': 'data(id)' }
-                        },
-                        {
-                            selector: 'edge',
-                            style: { 'width': 2, 'line-color': '#ccc', 'target-arrow-color': '#ccc', 'target-arrow-shape': 'triangle' }
-                        }
-                    ]}
-                    layout={{ name: 'cose', idealEdgeLength: 100, nodeOverlap: 20, refresh: 20, fit: true, padding: 30 }}
-                />
-            </div>
-        </Content>
-    );
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-2xl font-semibold mb-4">Airport Network Visualization</h1>
+      {loading && <div className="text-sm text-gray-500">Loading network…</div>}
+      {err && <div className="text-sm text-red-600">{err}</div>}
+      <div ref={containerRef} className="h-[70vh] w-full border border-gray-200 rounded-lg" />
+      <p className="mt-3 text-xs text-gray-500">All nodes/edges are parsed from src/dataset files.</p>
+    </div>
+  );
 }
