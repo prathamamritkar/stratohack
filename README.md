@@ -34,7 +34,7 @@ A simulation dashboard that compares a direct flight path against a realistic, a
 - **Styling**: Tailwind CSS, shadcn/ui
 - **AI & Machine Learning**: Genkit (Google AI)
 - **Mapping**: Google Maps JavaScript API
-- **Deployment**: Firebase App Hosting
+- **Deployment**: Vercel
 
 ---
 
