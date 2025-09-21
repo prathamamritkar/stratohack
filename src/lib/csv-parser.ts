@@ -3,88 +3,112 @@ import fs from 'fs';
 import path from 'path';
 
 export interface AirportNode {
-  id: string;
+  id: string; // airport code
   lat: number;
   lon: number;
-  city: string;
-  country: string;
+  city?: string;
+  country?: string;
 }
 
 export interface FlightEdge {
-  source: string;
-  target: string;
-  count: number;
+  source: string; // origin airport
+  target: string; // destination airport
+  count: number;  // traffic count or weight from dataset
 }
 
-// Get the base path of the project
+export interface FlightRow {
+  callsign?: string;
+  estdepartureairport?: string; // origin
+  estarrivalairport?: string;   // destination
+  firstseen?: number;           // unix (s)
+  lastseen?: number;            // unix (s)
+  [k: string]: any;
+}
+
 const basePath = path.join(process.cwd(), 'src', 'dataset');
 
-export const parseAirportNodes = (): Promise<AirportNode[]> => {
-  return new Promise((resolve, reject) => {
-    const filePath = path.join(basePath, 'airport_nodes.csv');
-    const fileStream = fs.createReadStream(filePath);
-
-    Papa.parse<any>(fileStream, {
-      header: true,
-      dynamicTyping: true,
-      complete: (results) => {
-        const nodes: AirportNode[] = results.data
-          .filter(row => row.id && row.lat && row.lon)
-          .map(row => ({
-            id: row.id,
-            lat: row.lat,
-            lon: row.lon,
-            city: row.city,
-            country: row.country,
-          }));
-        resolve(nodes);
-      },
-      error: (error: any) => {
-        reject(error);
-      },
-    });
+function parseCsvFile(filePath: string): any[] {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const parsed = Papa.parse<any>(content, {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
   });
-};
+  return (parsed.data as any[]).filter(Boolean);
+}
 
-export const parseFlightEdges = (): Promise<FlightEdge[]> => {
-  return new Promise((resolve, reject) => {
-    const filePath = path.join(basePath, 'flight_edges.csv');
-    const fileStream = fs.createReadStream(filePath);
+function fileIfExists(...candidates: string[]): string | null {
+  for (const c of candidates) {
+    const p = path.join(basePath, c);
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
 
-    Papa.parse<any>(fileStream, {
-      header: true,
-      dynamicTyping: true,
-      complete: (results) => {
-        const edges: FlightEdge[] = results.data
-          .filter(row => row.origin_airport && row.destination_airport && row.flight_count)
-          .map(row => ({
-            source: row.origin_airport,
-            target: row.destination_airport,
-            count: row.flight_count,
-          }));
-        resolve(edges);
-      },
-      error: (error: any) => {
-        reject(error);
-      },
+export async function parseAirportNodes(): Promise<AirportNode[]> {
+  const filePath = fileIfExists('airport_nodes.csv', 'airports.csv', 'nodes.csv');
+  if (!filePath) return [];
+  const rows = parseCsvFile(filePath);
+  return rows
+    .filter((r) => r.id && r.lat != null && r.lon != null)
+    .map((r) => ({
+      id: String(r.id).trim(),
+      lat: Number(r.lat),
+      lon: Number(r.lon),
+      city: r.city ? String(r.city).trim() : undefined,
+      country: r.country ? String(r.country).trim() : undefined,
+    }));
+}
+
+export async function parseFlightEdges(): Promise<FlightEdge[]> {
+  const filePath =
+    fileIfExists('airport_edges.csv', 'flight_edges.csv', 'edges.csv') || '';
+  if (!filePath) return [];
+  const rows = parseCsvFile(filePath);
+  return rows
+    .filter((r) => (r.origin_airport || r.source) && (r.destination_airport || r.target))
+    .map((r) => {
+      const source = (r.origin_airport ?? r.source) as string;
+      const target = (r.destination_airport ?? r.target) as string;
+      const count =
+        r.flight_count != null
+          ? Number(r.flight_count)
+          : r.count != null
+          ? Number(r.count)
+          : 1;
+      return {
+        source: String(source).trim(),
+        target: String(target).trim(),
+        count: Number.isFinite(count) && count > 0 ? count : 1,
+      };
     });
-  });
-};
+}
 
-export const getFlightData = (): Promise<any[]> => {
-    return new Promise((resolve, reject) => {
-        const filePath = path.join(basePath, 'flights_from_JFK.csv');
-        const fileStream = fs.createReadStream(filePath);
+// Loads all flights from any CSV in dataset that contains estdepartureairport/estarrivalairport columns
+export async function loadFlights(): Promise<FlightRow[]> {
+  const files = fs
+    .readdirSync(basePath)
+    .filter((f) => f.toLowerCase().endsWith('.csv'))
+    .map((f) => path.join(basePath, f));
 
-        Papa.parse(fileStream, {
-            header: true,
-            dynamicTyping: true,
-            complete: (results) => {
-                resolve(results.data);
-            },
-            error: (error) => {
-                reject(error);
-            },
+  const flights: FlightRow[] = [];
+  for (const f of files) {
+    const rows = parseCsvFile(f);
+    for (const r of rows) {
+      // Only keep rows that look like flights between airports
+      const origin = r.estdepartureairport ?? r.origin ?? r.origin_airport;
+      const dest = r.estarrivalairport ?? r.destination ?? r.destination_airport;
+      if (origin && dest) {
+        flights.push({
+          callsign: r.callsign ?? undefined,
+          estdepartureairport: String(origin).trim(),
+          estarrivalairport: String(dest).trim(),
+          firstseen: r.firstseen != null ? Number(r.firstseen) : undefined,
+          lastseen: r.lastseen != null ? Number(r.lastseen) : undefined,
+          ...r,
         });
-    });
-};
+      }
+    }
+  }
+  return flights;
+}
