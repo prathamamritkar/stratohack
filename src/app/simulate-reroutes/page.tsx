@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { Input, Button, Spin, Card } from 'antd';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function SimulateReroutesPage() {
     const [origin, setOrigin] = useState('JFK');
@@ -39,25 +41,35 @@ export default function SimulateReroutesPage() {
                     onChange={e => setDestination(e.target.value.toUpperCase())}
                     className="max-w-xs"
                 />
-                <Button type="primary" onClick={handleSimulation} loading={loading}>
-                    Simulate Reroute
+                <Button onClick={handleSimulation} disabled={loading}>
+                    {loading ? 'Simulating...' : 'Simulate Reroute'}
                 </Button>
             </div>
 
-            {loading && <div className="text-center"><Spin /></div>}
+            {loading && <div className="text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}
 
             {results && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Card title="Original Path">
-                        <p>Path: {results.originalPath.path.join(' -> ')}</p>
-                        <p>Distance: {results.originalPath.distance} segments</p>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Original Path</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p>Path: {results.originalPath.path.join(' -> ')}</p>
+                            <p>Distance: {results.originalPath.distance} segments</p>
+                        </CardContent>
                     </Card>
-                    <Card title="Rerouted Path (Dijkstra)">
-                        <p>Path: {results.reroutedPath.path.join(' -> ')}</p>
-                        <p>Distance: {results.reroutedPath.distance} segments</p>
-                        <p className="mt-4 font-semibold text-green-500">
-                            A shorter or alternative path found via simulation.
-                        </p>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Rerouted Path (Dijkstra)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p>Path: {results.reroutedPath.path.join(' -> ')}</p>
+                            <p>Distance: {results.reroutedPath.distance} segments</p>
+                            <p className="mt-4 font-semibold text-green-500">
+                                A shorter or alternative path found via simulation.
+                            </p>
+                        </CardContent>
                     </Card>
                 </div>
             )}

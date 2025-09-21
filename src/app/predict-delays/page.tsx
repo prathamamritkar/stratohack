@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { Input, Button, Spin, List, Card } from 'antd';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PredictDelaysPage() {
     const [airport, setAirport] = useState('JFK');
@@ -32,31 +34,32 @@ export default function PredictDelaysPage() {
                     onChange={e => setAirport(e.target.value.toUpperCase())}
                     className="max-w-xs"
                 />
-                <Button type="primary" onClick={handlePrediction} loading={loading}>
-                    Predict Delays
+                <Button onClick={handlePrediction} disabled={loading}>
+                    {loading ? 'Predicting...' : 'Predict Delays'}
                 </Button>
             </div>
 
-            {loading && <div className="text-center"><Spin /></div>}
+            {loading && <div className="text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}
 
             {results && (
                 <div>
                     <h2 className="text-2xl font-semibold mb-4">Prediction Results for {airport}</h2>
-                    <List
-                        grid={{ gutter: 16, column: 1 }}
-                        dataSource={results.delayChain}
-                        renderItem={(chain: any[], index: number) => (
-                            <List.Item>
-                                <Card title={`Delay Chain ${index + 1}`}>
+                    <div className="space-y-4">
+                        {results.delayChain && results.delayChain.map((chain: any[], index: number) => (
+                            <Card key={index}>
+                                <CardHeader>
+                                    <CardTitle>Delay Chain {index + 1}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
                                     {chain.map((flight, flightIndex) => (
-                                        <p key={flightIndex}>
+                                        <p key={flightIndex} className="mb-2">
                                             Flight {flight.callsign?.trim()} from {flight.origin} to {flight.estarrivalairport} - Potential Delay
                                         </p>
                                     ))}
-                                </Card>
-                            </List.Item>
-                        )}
-                    />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
