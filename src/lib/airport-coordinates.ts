@@ -49,12 +49,16 @@ export const findBestReroute = (originCode: string, destinationCode: string): st
     let bestRerouteAirport: string | null = null;
     let minExtraDistance = Infinity;
 
-    for (const airportCode in airportCoordinates) {
+    // Use only the airports from the dataset to find the best reroute option.
+    for (const airport of allAirports) {
+        const airportCode = airport.code;
         if (airportCode === originCode || airportCode === destinationCode) {
             continue;
         }
 
         const layoverCoords = airportCoordinates[airportCode];
+        if (!layoverCoords) continue;
+        
         const distOriginToLayover = haversineDistance(originCoords, layoverCoords);
         const distLayoverToDest = haversineDistance(layoverCoords, destinationCoords);
         const totalRerouteDistance = distOriginToLayover + distLayoverToDest;
@@ -62,6 +66,7 @@ export const findBestReroute = (originCode: string, destinationCode: string): st
         const extraDistance = totalRerouteDistance - directDistance;
 
         // Find a layover that adds some distance but isn't absurdly out of the way.
+        // A layover is considered "reasonable" if it doesn't more than 1.5x the direct flight distance.
         if (extraDistance > 0 && totalRerouteDistance < directDistance * 1.5) {
              if (extraDistance < minExtraDistance) {
                 minExtraDistance = extraDistance;
