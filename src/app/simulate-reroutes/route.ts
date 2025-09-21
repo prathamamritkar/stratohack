@@ -1,84 +1,107 @@
 import { NextResponse } from 'next/server';
 import { parseAirportNodes, parseFlightEdges } from '@/lib/csv-parser';
 
-// Basic implementation of Dijkstra's algorithm
-const dijkstra = (nodes: any[], edges: any[], startNode: string, endNode: string) => {
-    const graph: { [key: string]: { [key: string]: number } } = {};
-    for (const edge of edges) {
-        if (!graph[edge.source]) graph[edge.source] = {};
-        if (!graph[edge.target]) graph[edge.target] = {};
-        graph[edge.source][edge.target] = 1; // Assuming weight 1 for simplicity
-        graph[edge.target][edge.source] = 1; // Assuming bidirectional for pathfinding
+type Graph = Record<string, Record<string, number>>;
+
+// Build weighted graph where lower weight means preferable route.
+// Use inverse of traffic count to represent congestion (dataset-only metric).
+function buildGraph(edges: { source: string; target: string; count: number }[]): Graph {
+  const g: Graph = {};
+  for (const e of edges) {
+    const w = 1 / Math.max(1, e.count);
+    const s = e.source.toUpperCase();
+    const t = e.target.toUpperCase();
+    (g[s] ||= {})[t] = Math.min((g[s]?.[t] ?? Infinity), w);
+    // Undirected assumption may not be correct; only add reverse if dataset contains it.
+    // If you need bidirectional, ensure edges file has both directions.
+  }
+  return g;
+}
+
+function dijkstra(graph: Graph, start: string, goal: string) {
+  const dist: Record<string, number> = {};
+  const prev: Record<string, string | null> = {};
+  const q = new Set<string>(Object.keys(graph));
+
+  for (const v of q) {
+    dist[v] = Infinity;
+    prev[v] = null;
+  }
+  // Ensure nodes exist in dist even if they only appear as targets
+  for (const v of Object.values(graph)) {
+    for (const t of Object.keys(v)) {
+      if (!(t in dist)) {
+        dist[t] = Infinity;
+        prev[t] = null;
+        q.add(t);
+      }
     }
+  }
 
-    const distances: { [key: string]: number } = {};
-    const prev: { [key: string]: string | null } = {};
-    const pq = new Set<string>();
+  dist[start] = 0;
 
-    for (const node of nodes) {
-        distances[node.id] = Infinity;
-        prev[node.id] = null;
-        pq.add(node.id);
+  while (q.size) {
+    let u: string | null = null;
+    for (const v of q) {
+      if (u === null || dist[v] < dist[u]) u = v;
     }
+    if (u === null) break;
+    q.delete(u);
 
-    distances[startNode] = 0;
+    if (u === goal) break;
 
-    while (pq.size > 0) {
-        let minNode = null;
-        for (const node of pq) {
-            if (minNode === null || distances[node] < distances[minNode]) {
-                minNode = node;
-            }
-        }
-
-        if (minNode === null) break;
-        pq.delete(minNode);
-
-        if (minNode === endNode) {
-            const path = [];
-            let current = endNode;
-            while (current) {
-                path.unshift(current);
-                current = prev[current]!;
-            }
-            return { path, distance: distances[endNode] };
-        }
-
-        const neighbors = graph[minNode] || {};
-        for (const neighbor in neighbors) {
-            const alt = distances[minNode] + neighbors[neighbor];
-            if (alt < distances[neighbor]) {
-                distances[neighbor] = alt;
-                prev[neighbor] = minNode;
-            }
-        }
+    const neighbors = graph[u] || {};
+    for (const [v, w] of Object.entries(neighbors)) {
+      const alt = dist[u] + w;
+      if (alt < dist[v]) {
+        dist[v] = alt;
+        prev[v] = u;
+      }
     }
+  }
 
-    return { path: [], distance: Infinity };
-};
-
+  const path: string[] = [];
+  let cur: string | null = goal;
+  if (!prev[cur] && cur !== start) {
+    return { path: [], cost: Infinity };
+  }
+  while (cur) {
+    path.unshift(cur);
+    cur = prev[cur];
+  }
+  return { path, cost: dist[goal] };
+}
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const origin = searchParams.get('origin');
-    const destination = searchParams.get('destination');
+  const { searchParams } = new URL(request.url);
+  const origin = (searchParams.get('origin') || '').trim().toUpperCase();
+  const destination = (searchParams.get('destination') || '').trim().toUpperCase();
 
-    if (!origin || !destination) {
-        return new NextResponse('Origin and destination are required', { status: 400 });
-    }
+  if (!origin || !destination) {
+    return NextResponse.json({ error: 'origin_and_destination_required' }, { status: 400 });
+  }
 
-    try {
-        const [nodes, edges] = await Promise.all([
-            parseAirportNodes(),
-            parseFlightEdges(),
-        ]);
+  try {
+    const [nodes, edges] = await Promise.all([parseAirportNodes(), parseFlightEdges()]);
+    const graph = buildGraph(edges);
 
-        const originalPath = { path: [origin, destination], distance: 1 }; // Simplified
-        const reroutedPath = dijkstra(nodes, edges, origin, destination);
+    // Original path assumes direct edge if present
+    const directWeight = graph[origin]?.[destination];
+    const originalPath =
+      directWeight != null
+        ? { path: [origin, destination], cost: directWeight }
+        : { path: [], cost: Infinity };
 
-        return NextResponse.json({ originalPath, reroutedPath });
-    } catch (error) {
-        console.error('Error in rerouting simulation:', error);
-        return new NextResponse('Internal Server Error', { status: 500 });
-    }
+    const rerouted = dijkstra(graph, origin, destination);
+
+    return NextResponse.json({
+      origin,
+      destination,
+      originalPath,
+      reroutedPath: rerouted,
+    });
+  } catch (e) {
+    console.error('simulate-reroutes error', e);
+    return NextResponse.json({ error: 'failed_to_simulate' }, { status: 500 });
+  }
 }
