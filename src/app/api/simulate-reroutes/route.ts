@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { parseAirportNodes, parseFlightEdges } from '@/lib/csv-parser';
+import { parseFlightEdges } from '@/lib/csv-parser';
 
 type Graph = Record<string, Record<string, number>>;
 
-// Build weighted graph where lower weight means preferable route.
-// Use inverse of traffic count to represent congestion (dataset-only metric).
 function buildGraph(edges: { source: string; target: string; count: number }[]): Graph {
   const g: Graph = {};
   for (const e of edges) {
@@ -12,8 +10,6 @@ function buildGraph(edges: { source: string; target: string; count: number }[]):
     const s = e.source.toUpperCase();
     const t = e.target.toUpperCase();
     (g[s] ||= {})[t] = Math.min((g[s]?.[t] ?? Infinity), w);
-    // Undirected assumption may not be correct; only add reverse if dataset contains it.
-    // If you need bidirectional, ensure edges file has both directions.
   }
   return g;
 }
@@ -27,7 +23,6 @@ function dijkstra(graph: Graph, start: string, goal: string) {
     dist[v] = Infinity;
     prev[v] = null;
   }
-  // Ensure nodes exist in dist even if they only appear as targets
   for (const v of Object.values(graph)) {
     for (const t of Object.keys(v)) {
       if (!(t in dist)) {
@@ -82,24 +77,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [nodes, edges] = await Promise.all([parseAirportNodes(), parseFlightEdges()]);
+    const edges = await parseFlightEdges();
     const graph = buildGraph(edges);
 
-    // Original path assumes direct edge if present
     const directWeight = graph[origin]?.[destination];
     const originalPath =
       directWeight != null
         ? { path: [origin, destination], cost: directWeight }
         : { path: [], cost: Infinity };
 
-    const rerouted = dijkstra(graph, origin, destination);
+    const reroutedPath = dijkstra(graph, origin, destination);
 
-    return NextResponse.json({
-      origin,
-      destination,
-      originalPath,
-      reroutedPath: rerouted,
-    });
+    return NextResponse.json({ origin, destination, originalPath, reroutedPath });
   } catch (e) {
     console.error('simulate-reroutes error', e);
     return NextResponse.json({ error: 'failed_to_simulate' }, { status: 500 });
