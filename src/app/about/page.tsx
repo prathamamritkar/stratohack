@@ -35,7 +35,7 @@ export default function AboutPage() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
       <div className="max-w-5xl mx-auto space-y-12">
         <header className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-headline">Meet the Team</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Meet the Team</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             The minds behind AirNavFlow, blending expertise from diverse fields to innovate air traffic solutions.
           </p>
@@ -69,7 +69,7 @@ export default function AboutPage() {
                      <Image src="https://picsum.photos/seed/teamwork/1200/400" alt="Teamwork" fill className="object-cover" data-ai-hint="abstract technology" />
                 </div>
                 <div className="relative">
-                    <h3 className="text-2xl font-bold font-headline mb-2">Our Vision</h3>
+                    <h3 className="text-2xl font-bold mb-2">Our Vision</h3>
                     <p className="text-muted-foreground max-w-3xl mx-auto">
                         We are a team of students passionate about applying cutting-edge technology to solve real-world challenges. By combining our knowledge in AI, data science, and engineering, we aim to build intelligent systems that make global travel safer and more efficient for everyone. This project is a testament to our collaborative spirit and drive to innovate.
                     </p>
