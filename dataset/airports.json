@@ -1,0 +1,27 @@
+
+[
+  {"code": "JFK", "lat": 40.6413, "lon": -73.7781, "name": "John F. Kennedy International Airport"},
+  {"code": "LAX", "lat": 33.9416, "lon": -118.4085, "name": "Los Angeles International Airport"},
+  {"code": "LHR", "lat": 51.4700, "lon": -0.4543, "name": "Heathrow Airport"},
+  {"code": "HND", "lat": 35.5494, "lon": 139.7798, "name": "Tokyo Haneda Airport"},
+  {"code": "CDG", "lat": 49.0097, "lon": 2.5479, "name": "Charles de Gaulle Airport"},
+  {"code": "DXB", "lat": 25.2532, "lon": 55.3657, "name": "Dubai International Airport"},
+  {"code": "ORD", "lat": 41.9742, "lon": -87.9073, "name": "O'Hare International Airport"},
+  {"code": "DFW", "lat": 32.8998, "lon": -97.0403, "name": "Dallas/Fort Worth International Airport"},
+  {"code": "ATL", "lat": 33.6407, "lon": -84.4277, "name": "Hartsfield-Jackson Atlanta International Airport"},
+  {"code": "SFO", "lat": 37.6213, "lon": -122.3790, "name": "San Francisco International Airport"},
+  {"code": "DEN", "lat": 39.8561, "lon": -104.6737, "name": "Denver International Airport"},
+  {"code": "BOM", "lat": 19.0896, "lon": 72.8656, "name": "Chhatrapati Shivaji Maharaj International Airport"},
+  {"code": "DEL", "lat": 28.5562, "lon": 77.1000, "name": "Indira Gandhi International Airport"},
+  {"code": "AMS", "lat": 52.3105, "lon": 4.7683, "name": "Amsterdam Airport Schiphol"},
+  {"code": "FRA", "lat": 50.0379, "lon": 8.5622, "name": "Frankfurt Airport"},
+  {"code": "SIN", "lat": 1.3644, "lon": 103.9915, "name": "Singapore Changi Airport"},
+  {"code": "HKG", "lat": 22.3080, "lon": 113.9185, "name": "Hong Kong International Airport"},
+  {"code": "PVG", "lat": 31.1434, "lon": 121.8053, "name": "Shanghai Pudong International Airport"},
+  {"code": "PEK", "lat": 40.0799, "lon": 116.6031, "name": "Beijing Capital International Airport"},
+  {"code": "SYD", "lat": -33.9399, "lon": 151.1753, "name": "Sydney Kingsford Smith Airport"},
+  {"code": "YYZ", "lat": 43.6777, "lon": -79.6248, "name": "Toronto Pearson International Airport"},
+  {"code": "GRU", "lat": -23.4356, "lon": -46.4731, "name": "São Paulo/Guarulhos International Airport"},
+  {"code": "MEX", "lat": 19.4363, "lon": -99.0721, "name": "Mexico City International Airport"},
+  {"code": "JNB", "lat": -26.1392, "lon": 28.2460, "name": "O. R. Tambo International Airport"}
+]
