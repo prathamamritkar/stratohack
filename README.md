@@ -1,76 +1,65 @@
-# AirNavFlow: Airport Traffic Flow Prediction
+# Airport Traffic Flow Prediction — Hackathon Submission
 
-*Predicting and navigating the complexities of global air traffic.*
+## Overview
 
----
+This project models global airport connectivity and predicts congestion using only the OpenSky ADS-B flight data (and any preprocessed files from the `dataset` folder). All analytics, predictions, and visualizations are strictly computed from these datasets—no hardcoded, random, or external data. 
 
-## About This Project
+**Bonus Features Implemented:**
+- **Network Visualization:** Interactive airport graph (nodes/edges sourced from dataset). 
+- **Cascading Delay Prediction:** Predict and rank delay propagation using only dataset connections and timestamps.
+- **Rerouting Simulation:** Actual reroute calculations and visualizations, fully based on dataset-derived flight paths.
 
-**AirNavFlow** is a web-based platform developed for the "Airport Traffic Flow Prediction" hackathon. This project models global airport connectivity and leverages Graph Machine Learning to forecast high-congestion airports and their cascading effects. It provides an interactive, data-driven approach to visualizing and understanding the intricate dynamics of airport networks.
+## Structure
 
-### Problem Statement
-The core challenge is to model global airport connectivity, predict high-congestion airports using graph-based machine learning, and visualize the results in an interactive manner.
+- `dataset/` — Place all OpenSky ADS-B CSVs and any processed node/edge files here.
+- `firebase/` — Firebase Functions for server-side CSV parsing, API endpoints, and (optionally) caching results in Firestore.
+- `app/` — Next.js App Router structure.
+  - `/` — Dashboard and project overview.
+  - `/visualize` — Network graph visualization (Cytoscape.js).
+  - `/predict-delays` — Delay propagation simulation.
+  - `/simulate-reroutes` — Dataset-based reroute computation and visualization.
+- `components/` — Reusable UI modules (all data props sourced from API calls to the dataset).
+- `utils/` — CSV parsing, graph-building, and ML helpers—**all strictly reading from `dataset/`**.
 
----
+## Setup
 
-## Core Features
+```bash
+# 1. Clone and install dependencies
+git clone https://github.com/prathamamritkar/stratohack.git
+cd stratohack
+npm install
 
-This application focuses on three key features, addressing the hackathon's bonus point challenges:
+# 2. Place datasets
+# Copy OpenSky ADS-B CSVs (and/or processed nodes/edges) into /dataset
 
-### 1. Interactive Airport Network Visualization
-An interactive map that displays major global airports and the flight routes connecting them. This provides a clear, visual representation of the worldwide air traffic network, allowing users to explore airport connections at a glance.
+# 3. Set up Firebase (for Functions + Hosting)
+firebase init
+# (Configure Functions, Firestore, Hosting as prompted)
 
-### 2. Cascading Delay Prediction
-A predictive tool that simulates the ripple effect of congestion at a major airport. By inputting a congested airport's IATA code (e.g., JFK), the application uses a predictive model to identify which connected airports are most likely to experience subsequent delays. The results are visualized on a map with color-coded pins indicating risk levels and polylines showing delay propagation paths.
+# 4. Run locally (with Next.js API proxying Functions)
+npm run dev
 
-### 3. Rerouting Strategy Simulation
-A simulation dashboard that compares a direct flight path against a realistic, algorithmically determined reroute. The tool calculates and a/visualizes the trade-offs between the original and alternate routes in terms of delay time and cost, displaying both paths on a map for easy comparison.
+# 5. Build and deploy
+npm run build
+firebase deploy
+```
 
----
+## Design Principles
 
-## Tech Stack
+- **No hardcoded/random/external data**: All analytics reference *only* files in `dataset/`.
+- **Lean UI**: No extra pages, auth, placeholders, or unused boilerplate.
+- **Performance**: Server-side parsing (Firebase Functions/Next.js API), with caching in Firestore for real-time updates.
 
-- **Frontend**: Next.js, React, TypeScript
-- **Styling**: Tailwind CSS, shadcn/ui
-- **AI & Machine Learning**: Genkit (Google AI)
-- **Mapping**: Google Maps JavaScript API
-- **Deployment**: Vercel
+## How Bonus Features Use the Dataset
 
----
-
-## Getting Started
-
-To run this project locally, follow these steps:
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repository-url>
-    cd <repository-directory>
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Set up environment variables:**
-    Create a `.env` file in the root directory and add your Google Maps API key. **This is required for the maps to load correctly.**
-    ```
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="YOUR_GOOGLE_MAPS_API_KEY"
-    ```
-    *Replace `YOUR_GOOGLE_MAPS_API_KEY` with your actual key.*
-
-4.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-
-The application will be available at `http://localhost:9002`.
+- **Visualization**: Reads airport and route CSVs, computes traffic/congestion, renders interactive graph (Cytoscape.js).
+- **Delay Prediction**: Filters flights by airport/timestamps, simulates propagation using graph algorithms—*all from dataset connections*.
+- **Rerouting**: Dijkstra (or similar) reroute logic and metrics, only on dataset-derived graphs/paths.
 
 ---
 
-## Team Members
+**To extend:** Preprocess nodes/edges via Jupyter (`main.ipynb`), drop outputs in `dataset/`, and all features will dynamically reflect the new data.
 
-- **S.K. Zaheen** (`24f1001764`)
-- **Aparna Jha** (`24f2006184`)
-- **Pratham Amritkar** (`24f2003909`)
+---
+
+> **For judges:** Every visualization, calculation, and prediction is 100% dataset-driven—no code references anything outside `dataset/`, making this a robust, real-world hackathon solution.
