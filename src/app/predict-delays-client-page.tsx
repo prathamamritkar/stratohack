@@ -1,208 +1,88 @@
-'use client';
+"use client";
+
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Map, Plane } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 
-import { predictCascadingDelays, PredictCascadingDelaysOutput } from '@/ai/flows/predict-cascading-delays-flow';
-import { getCoordinatesMap } from '@/lib/airport-coordinates';
-import { AnimatedButton } from '@/components/ui/animated-button';
+export default function PredictDelaysPage() {
+  const [airport, setAirport] = useState('JFK');
+  const [windowMinutes, setWindowMinutes] = useState(120);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-const RouteMap = dynamic(() => import('@/components/google-route-map'), { 
-  ssr: false,
-  loading: () => <Skeleton className="h-[400px] w-full" />
-});
-
-const formSchema = z.object({
-  airport: z.string().min(3, 'Airport code must be 3 characters').max(4, 'Airport code must be at most 4 characters').toUpperCase(),
-});
-
-type PredictionResult = PredictCascadingDelaysOutput;
-
-export function PredictDelaysClientPage() {
-  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [submittedAirport, setSubmittedAirport] = useState<string | null>(null);
-
-  const airportCoordinates = getCoordinatesMap();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      airport: '',
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    setError(null);
-    setPrediction(null);
-    setSubmittedAirport(null);
-    
-    if (!airportCoordinates[values.airport]) {
-      setError('Invalid airport code. Please use a valid IATA code like JFK, LAX, etc.');
-      setIsLoading(false);
-      return;
-    }
-
+  async function handlePredict(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setErr(null);
+    setResult(null);
     try {
-      const result = await predictCascadingDelays({
-        congestedAirport: values.airport,
-      });
-      setPrediction(result);
-      setSubmittedAirport(values.airport);
-
-    } catch (e) {
-      console.error(e);
-      setError('Failed to generate prediction. Please try again.');
+      const res = await fetch(`/api/predict-delays?airport=${encodeURIComponent(airport)}&window=${windowMinutes}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to predict');
+      setResult(data);
+    } catch (e: any) {
+      setErr(e?.message ?? 'Failed to predict');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }
-  
-  const congestedAirportCoords = submittedAirport ? airportCoordinates[submittedAirport] : undefined;
-
-  const affectedAirportsData = prediction?.affectedAirports.map(a => ({
-      ...a,
-      coords: airportCoordinates[a.airport]
-  })).filter(a => a.coords) || [];
-
-  const delayPaths = congestedAirportCoords && prediction ?
-    affectedAirportsData.map(a => [congestedAirportCoords, a.coords!])
-    : [];
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
-      <div className="space-y-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-8">
-                 <Card className="bg-card/80 border-accent/20">
-                    <CardHeader>
-                        <CardTitle>Prediction Parameters</CardTitle>
-                        <CardDescription>Enter a congested airport to begin the simulation.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <FormField
-                                control={form.control}
-                                name="airport"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Congested Airport (IATA Code)</FormLabel>
-                                    <div className="relative">
-                                    <Plane className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <FormControl>
-                                        <Input placeholder="e.g., JFK, LAX, ORD" {...field} className="pl-10" />
-                                    </FormControl>
-                                    </div>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <AnimatedButton type="submit" disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                            {isLoading ? (
-                                <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Predicting Delays...
-                                </>
-                            ) : (
-                                'Predict Delays'
-                            )}
-                            </AnimatedButton>
-                        </form>
-                        </Form>
-                    </CardContent>
-                </Card>
-
-                 {prediction && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Affected Airports</CardTitle>
-                            <CardDescription>Airports likely to experience cascading delays.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4 max-h-[calc(100vh-28rem)] overflow-y-auto">
-                            {affectedAirportsData.map((airport) => (
-                                <div key={airport.airport} className="p-4 bg-muted/50 rounded-lg space-y-3 transition-all hover:bg-muted">
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-bold text-lg text-primary">{airport.airport}</span>
-                                        <span className="text-sm font-mono p-1 px-2 rounded bg-destructive/20 text-destructive-foreground">{airport.predictedDelay} min delay</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Progress value={airport.delayProbability} className="h-2" />
-                                        <span className="text-xs font-semibold text-muted-foreground w-16 text-right">{airport.delayProbability.toFixed(1)}%</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-            
-            <div className="lg:col-span-2">
-                <Card className={`transition-opacity`}>
-                     <CardHeader>
-                      <CardTitle>Delay Propagation Map</CardTitle>
-                      <CardDescription>Visualization of predicted cascading delays.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {error && (
-                            <Alert variant="destructive" className="mb-4">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-                        
-                        {!isLoading && !error && prediction && submittedAirport && congestedAirportCoords ? (
-                           <RouteMap 
-                                key={submittedAirport}
-                                isPredictionMap={true}
-                                paths={delayPaths}
-                                originAirport={{ code: submittedAirport, coords: congestedAirportCoords }}
-                                affectedAirports={affectedAirportsData}
-                                containerClassName="h-[calc(100vh-14rem)] w-full rounded-lg bg-muted relative overflow-hidden"
-                            />
-                        ) : (
-                           <div className="h-[calc(100vh-14rem)] w-full rounded-lg bg-muted flex flex-col items-center justify-center text-center p-4">
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-                                        <p className="text-lg font-semibold">Generating Prediction...</p>
-                                        <p className="text-muted-foreground">The GNN model is analyzing network propagation.</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Map className="h-12 w-12 text-muted-foreground mb-4"/>
-                                        <p className="text-lg font-semibold">Map is ready</p>
-                                        <p className="text-muted-foreground">Enter an airport code to see the delay propagation map.</p>
-                                    </>
-                                )}
-                            </div>
-                        )}
-
-                    </CardContent>
-                </Card>
-            </div>
+    <div className="min-h-screen p-6">
+      <h1 className="text-2xl font-semibold mb-4">Cascading Delay Prediction</h1>
+      <form onSubmit={handlePredict} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end mb-6">
+        <div>
+          <label className="block text-sm text-gray-700">Airport (IATA)</label>
+          <input
+            value={airport}
+            onChange={(e) => setAirport(e.target.value.toUpperCase())}
+            className="border rounded px-3 py-2 w-40"
+            placeholder="e.g., JFK"
+          />
         </div>
-      </div>
+        <div>
+          <label className="block text-sm text-gray-700">Connection window (minutes)</label>
+          <input
+            type="number"
+            value={windowMinutes}
+            onChange={(e) => setWindowMinutes(Math.max(0, Number(e.target.value)))}
+            className="border rounded px-3 py-2 w-48"
+            min={0}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        >
+          {loading ? 'Computing…' : 'Predict'}
+        </button>
+      </form>
+
+      {err && <div className="text-sm text-red-600 mb-4">{err}</div>}
+
+      {result && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Most impacted (ranked)</h2>
+          <ul className="list-disc pl-6 text-sm">
+            {result.ranked?.map((r: any, idx: number) => (
+              <li key={r.airport}>
+                {idx + 1}. {r.airport} — score {r.score}
+              </li>
+            ))}
+          </ul>
+
+          <h3 className="text-base font-medium">Sample chains</h3>
+          <div className="space-y-2">
+            {(result.chains || []).slice(0, 10).map((chain: any[], i: number) => (
+              <div key={i} className="text-xs border rounded p-2 bg-gray-50">
+                {chain
+                  .map((f: any) => `${f.estdepartureairport ?? '?'}→${f.estarrivalairport ?? '?'} (${f.callsign ?? 'N/A'})`)
+                  .join('  |  ')}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
