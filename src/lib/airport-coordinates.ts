@@ -61,6 +61,7 @@ export const findBestReroute = (originCode: string, destinationCode: string): st
 
         const extraDistance = totalRerouteDistance - directDistance;
 
+        // Find a layover that adds some distance but isn't absurdly out of the way.
         if (extraDistance > 0 && totalRerouteDistance < directDistance * 1.5) {
              if (extraDistance < minExtraDistance) {
                 minExtraDistance = extraDistance;
@@ -69,10 +70,7 @@ export const findBestReroute = (originCode: string, destinationCode: string): st
         }
     }
     
-    if (!bestRerouteAirport) {
-        const fallbackHubs = ['ORD', 'DXB', 'AMS', 'HKG'];
-        return fallbackHubs.find(hub => hub !== originCode && hub !== destinationCode) || null;
-    }
-
+    // If no suitable reroute is found within the geometric constraints, return null.
+    // The UI can handle this case.
     return bestRerouteAirport;
 };

@@ -62,14 +62,11 @@ const predictCascadingDelaysFlow = ai.defineFlow(
     outputSchema: PredictCascadingDelaysOutputSchema,
   },
   async (input) => {
-    // In a real application, you would have a graph and find the actual connected airports.
-    // Here, we'll just grab a random subset of airports from our dataset to simulate this.
+    // Use the full, accurate airport list from our dataset.
     const allAirports = await getAirportData();
     const connectedAirports = allAirports
       .map(a => a.code)
-      .filter(code => code !== input.congestedAirport)
-      .sort(() => 0.5 - Math.random()) // Shuffle
-      .slice(0, 10); // Take 10 random ones
+      .filter(code => code !== input.congestedAirport);
       
     const { output } = await promptTemplate({...input, connectedAirports });
     return output!;
