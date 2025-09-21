@@ -43,7 +43,7 @@ export function HomePageClient({ airportData }: HomePageClientProps) {
   return (
     <div className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground font-headline">
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground">
             Welcome to <span className="text-primary">AirNavFlow</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-muted-foreground sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
