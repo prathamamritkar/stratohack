@@ -54,10 +54,11 @@ To run this project locally, follow these steps:
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env` file in the root directory and add your Google Maps API key:
+    Create a `.env` file in the root directory and add your Google Maps API key. **This is required for the maps to load correctly.**
     ```
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="YOUR_GOOGLE_MAPS_API_KEY"
     ```
+    *Replace `YOUR_GOOGLE_MAPS_API_KEY` with your actual key.*
 
 4.  **Run the development server:**
     ```bash
